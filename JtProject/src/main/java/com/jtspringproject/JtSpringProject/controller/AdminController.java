@@ -1,9 +1,5 @@
 package com.jtspringproject.JtSpringProject.controller;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +22,14 @@ import com.jtspringproject.JtSpringProject.models.User;
 import com.jtspringproject.JtSpringProject.services.categoryService;
 import com.jtspringproject.JtSpringProject.services.productService;
 import com.jtspringproject.JtSpringProject.services.userService;
+import com.jtspringproject.JtSpringProject.dto.UserResponseDto;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/admin")
+@Slf4j
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Admin Controller", description = "Merchant management APIs")
 public class AdminController {
 
 	private final userService userService;
@@ -44,7 +45,11 @@ public class AdminController {
 	
 	@GetMapping("/index")
 	public String index(Model model) {
-		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		String username = "";
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
 		model.addAttribute("username", username);
 		return "index";			
 	}
@@ -59,14 +64,18 @@ public class AdminController {
 	}
 	
 	@GetMapping( value={"/","Dashboard"})
-	public ModelAndView adminHome(Model model) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	@io.swagger.v3.oas.annotations.Operation(summary = "Admin Home Dashboard", description = "Display the main admin control panel")
+	public ModelAndView adminHome() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	    ModelAndView mv = new ModelAndView("adminHome");
-	    mv.addObject("admin", authentication.getName());
+		if (auth != null) {
+			mv.addObject("admin", auth.getName());
+		}
 	    return mv;
 	}
 	
 	@GetMapping("categories")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get Categories", description = "List all product categories")
 	public ModelAndView getcategory() {
 		ModelAndView mView = new ModelAndView("categories");
 		List<Category> categories = this.categoryService.getCategories();
@@ -77,7 +86,7 @@ public class AdminController {
 	@PostMapping("/categories")
 	public String addCategory(@RequestParam("categoryname") String category_name)
 	{
-		System.out.println(category_name);
+		log.info("Adding category: {}", category_name);
 		
 		Category category =  this.categoryService.addCategory(category_name);
 		if(category.getName().equals(category_name)) {
@@ -97,22 +106,29 @@ public class AdminController {
 	@GetMapping("categories/update")
 	public String updateCategory(@RequestParam("categoryid") int id, @RequestParam("categoryname") String categoryname)
 	{
-		Category category = this.categoryService.updateCategory(id, categoryname);
+		this.categoryService.updateCategory(id, categoryname);
 		return "redirect:/admin/categories";
 	}
 
 	
-//	 --------------------------Remaining --------------------
+
 	@GetMapping("products")
-	public ModelAndView getproduct() {
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get All Products", description = "Retrieve a paginated list of all products")
+	public ModelAndView getproduct(
+			@RequestParam(defaultValue = "1") int page, 
+			@RequestParam(defaultValue = "10") int size) {
 		ModelAndView mView = new ModelAndView("products");
 
-		List<Product> products = this.productService.getProducts();
+		List<Product> products = this.productService.getProductsPaginated(page, size, "asc");
+		long totalProducts = this.productService.getProductsCount();
+		int totalPages = (int) Math.ceil((double) totalProducts / size);
 		
 		if (products.isEmpty()) {
 			mView.addObject("msg", "No products are available");
 		} else {
 			mView.addObject("products", products);
+			mView.addObject("currentPage", page);
+			mView.addObject("totalPages", totalPages);
 		}
 		return mView;
 	}
@@ -127,7 +143,7 @@ public class AdminController {
 
 	@RequestMapping(value = "products/add",method=RequestMethod.POST)
 	public String addProduct(@RequestParam("name") String name,@RequestParam("categoryid") int categoryId ,@RequestParam("price") int price,@RequestParam("weight") int weight, @RequestParam("quantity")int quantity,@RequestParam("description") String description,@RequestParam("productImage") String productImage) {
-		System.out.println(categoryId);
+		log.info("Adding product to category ID: {}", categoryId);
 		Category category = this.categoryService.getCategory(categoryId);
 		Product product = new Product();
 		product.setId(categoryId);
@@ -155,10 +171,8 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "products/update/{id}",method=RequestMethod.POST)
-	public String updateProduct(@PathVariable("id") int id ,@RequestParam("name") String name,@RequestParam("categoryid") int categoryId ,@RequestParam("price") int price,@RequestParam("weight") int weight, @RequestParam("quantity")int quantity,@RequestParam("description") String description,@RequestParam("productImage") String productImage)
+	public String updateProduct()
 	{
-
-//		this.productService.updateProduct();
 		return "redirect:/admin/products";
 	}
 	
@@ -178,74 +192,58 @@ public class AdminController {
 	public ModelAndView getCustomerDetail() {
 		ModelAndView mView = new ModelAndView("displayCustomers");
 		List<User> users = this.userService.getUsers();
-		mView.addObject("customers", users);
+		
+		List<UserResponseDto> userDtos = users.stream().map(user -> {
+			UserResponseDto dto = new UserResponseDto();
+			dto.setId(user.getId());
+			dto.setUsername(user.getUsername());
+			dto.setEmail(user.getEmail());
+			dto.setAddress(user.getAddress());
+			dto.setRole(user.getRole());
+			return dto;
+		}).collect(java.util.stream.Collectors.toList());
+
+		mView.addObject("customers", userDtos);
 		return mView;
 	}
 	
 	
 	@GetMapping("profileDisplay")
 	public String profileDisplay(Model model) {
-		String displayusername,displaypassword,displayemail,displayaddress;
-		try
-		{
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			PreparedStatement stmt = con.prepareStatement("select * from users where username = ?"+";");
-			
-			String username = SecurityContextHolder.getContext().getAuthentication().getName();
-			stmt.setString(1, username);
-			
-			ResultSet rst = stmt.executeQuery();
-			
-			if(rst.next())
-			{
-			int userid = rst.getInt(1);
-			displayusername = rst.getString(2);
-			displayemail = rst.getString(3);
-			displaypassword = rst.getString(4);
-			displayaddress = rst.getString(5);
-			model.addAttribute("userid",userid);
-			model.addAttribute("username",displayusername);
-			model.addAttribute("email",displayemail);
-			model.addAttribute("password",displaypassword);
-			model.addAttribute("address",displayaddress);
-			}
+		String username = "";
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
 		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
+		User user = userService.getUserByUsername(username);
+		
+		if (user != null) {
+			model.addAttribute("userid", user.getId());
+			model.addAttribute("username", user.getUsername());
+			model.addAttribute("email", user.getEmail());
+			model.addAttribute("password", user.getPassword());
+			model.addAttribute("address", user.getAddress());
 		}
-		System.out.println("Hello");
+		log.info("Hello");
 		return "updateProfile";
 	}
 	
 	@RequestMapping(value = "updateuser",method=RequestMethod.POST)
 	public String updateUserProfile(@RequestParam("userid") int userid,@RequestParam("username") String username, @RequestParam("email") String email, @RequestParam("password") String password, @RequestParam("address") String address) 
-	
 	{
-		try
-		{
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ecommjava","root","");
-			
-			PreparedStatement pst = con.prepareStatement("update users set username= ?,email = ?,password= ?, address= ? where uid = ?;");
-			pst.setString(1, username);
-			pst.setString(2, email);
-			pst.setString(3, password);
-			pst.setString(4, address);
-			pst.setInt(5, userid);
-			int i = pst.executeUpdate();	
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			user.setUsername(username);
+			user.setEmail(email);
+			user.setAddress(address);
+			userService.addUser(user); 
 			
 			Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
 		            username,
-		            password,
+		            user.getPassword(),
 		            SecurityContextHolder.getContext().getAuthentication().getAuthorities());
 
 		    SecurityContextHolder.getContext().setAuthentication(newAuthentication);
-		}
-		catch(Exception e)
-		{
-			System.out.println("Exception:"+e);
 		}
 		return "redirect:index";
 	}
