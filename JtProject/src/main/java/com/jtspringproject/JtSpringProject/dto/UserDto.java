@@ -21,7 +21,7 @@ public class UserDto {
     @NotBlank(message = "Address cannot be empty")
     private String address;
 
-    // Getters and Setters
+
     public String getUsername() {
         return username;
     }

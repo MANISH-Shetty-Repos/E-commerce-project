@@ -24,7 +24,7 @@ public class OrderItem {
     @Column(name = "price_at_purchase", nullable = false)
     private int priceAtPurchase;
 
-    // Getters and Setters
+
 
     public int getId() {
         return id;

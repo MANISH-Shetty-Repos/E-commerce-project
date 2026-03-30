@@ -7,7 +7,7 @@ public class UserResponseDto {
     private String address;
     private String role;
 
-    // Getters and Setters
+
     public int getId() {
         return id;
     }

@@ -221,10 +221,9 @@ public class AdminController {
 			model.addAttribute("userid", user.getId());
 			model.addAttribute("username", user.getUsername());
 			model.addAttribute("email", user.getEmail());
-			model.addAttribute("password", user.getPassword());
 			model.addAttribute("address", user.getAddress());
 		}
-		log.info("Hello");
+
 		return "updateProfile";
 	}
 	

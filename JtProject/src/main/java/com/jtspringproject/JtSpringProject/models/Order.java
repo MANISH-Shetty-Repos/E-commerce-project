@@ -30,7 +30,7 @@ public class Order {
         this.orderDate = new Date();
     }
 
-    // Getters and Setters
+
 
     public int getId() {
         return id;

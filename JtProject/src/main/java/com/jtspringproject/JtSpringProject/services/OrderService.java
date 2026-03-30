@@ -30,7 +30,7 @@ public class OrderService {
             OrderItem item = new OrderItem();
             item.setOrder(newOrder);
             item.setProduct(product);
-            item.setQuantity(1); // Default to 1 for now
+            item.setQuantity(1);
             item.setPriceAtPurchase(product.getPrice());
             
             totalAmount += product.getPrice();
