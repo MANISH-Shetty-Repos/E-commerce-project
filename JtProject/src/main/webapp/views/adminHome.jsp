@@ -1,104 +1,107 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-	content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-<link rel="stylesheet"
-	href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-	integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-	crossorigin="anonymous">
-<link rel="stylesheet"
-	href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-	integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ"
-	crossorigin="anonymous">
-<title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - E-Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
+<body>
+    <div class="admin-layout">
 
-<body class="bg-dark">
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-		<div class="container-fluid">
-			<a class="navbar-brand" href="#"> <img
-				src="../static/images/logo.png" width="auto" height="40"
-				class="d-inline-block align-top" alt="" />
-			</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse"
-				data-target="#navbarSupportedContent"
-				aria-controls="navbarSupportedContent" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <a href="/admin/Dashboard">🛍️ E-Store</a>
+                <small>Admin Panel</small>
+            </div>
+            <div class="sidebar-section">Main</div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin/Dashboard" class="active"><span class="nav-icon">📊</span> Dashboard</a></li>
+            </ul>
+            <div class="sidebar-section">Catalog</div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin/categories"><span class="nav-icon">📁</span> Categories</a></li>
+                <li><a href="/admin/products"><span class="nav-icon">📦</span> Products</a></li>
+                <li><a href="/admin/products/add"><span class="nav-icon">➕</span> Add Product</a></li>
+            </ul>
+            <div class="sidebar-section">Users</div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin/customers"><span class="nav-icon">👥</span> Customers</a></li>
+                <li><a href="/admin/user/profile"><span class="nav-icon">👤</span> My Profile</a></li>
+            </ul>
+            <div class="sidebar-section">Account</div>
+            <ul class="sidebar-nav">
+                <li><a href="/admin/logout"><span class="nav-icon">🚪</span> Logout</a></li>
+            </ul>
+        </aside>
 
-			<div class="collapse navbar-collapse" id="navbarSupportedContent">
-				<ul class="navbar-nav mr-auto"></ul>
-				<ul class="navbar-nav">
-					<li class="nav-item active"><a class="nav-link" href="/admin/">Home
-							Page</a></li>
-					<li class="nav-item active"><a class="nav-link" href="/admin/logout">Logout</a></li>
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <h1>Dashboard</h1>
+                <div class="admin-topbar-actions">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Welcome, <strong>${admin}</strong></span>
+                </div>
+            </div>
 
-				</ul>
+            <!-- QUICK STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value" id="productCount">—</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-value" id="categoryCount">—</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="customerCount">—</div>
+                    <div class="stat-label">Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🛒</div>
+                    <div class="stat-value" id="orderCount">—</div>
+                    <div class="stat-label">Orders</div>
+                </div>
+            </div>
 
-			</div>
-		</div>
-	</nav>
-	<div class="jumbotron text-center">
-		<h1 class="display-4">Welcome Back, Admin</h1><hr>
-		<p>Manage your data from this Admin Panel</p>
-	</div><br>
-	<div class="container-fluid" >
-		<div class="row justify-content-center">
-			<div class="col-sm-3 pt-4">
-				<div class="card border border-info" style="background-color: white;">
-					<div class="card-body text-center">
-						<h4 class="card-title">Categories</h4>
-						<p>---------------------------------------------</p>
-						<p class="card-text">Manage the categories section here.</p>
-						<a href="/admin/categories" class="card-link btn btn-primary">Manage</a>
+            <!-- QUICK ACTIONS -->
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px;">Quick Actions</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                <a href="/admin/products/add" class="card" style="text-decoration: none; text-align: center; padding: 32px 16px; transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 8px;">➕</div>
+                    <div style="font-weight: 600; color: var(--text-main);">Add Product</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Create a new listing</div>
+                </a>
+                <a href="/admin/categories" class="card" style="text-decoration: none; text-align: center; padding: 32px 16px; transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 8px;">📁</div>
+                    <div style="font-weight: 600; color: var(--text-main);">Categories</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Manage categories</div>
+                </a>
+                <a href="/admin/customers" class="card" style="text-decoration: none; text-align: center; padding: 32px 16px; transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 8px;">👥</div>
+                    <div style="font-weight: 600; color: var(--text-main);">Customers</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">View all users</div>
+                </a>
+                <a href="/admin/products" class="card" style="text-decoration: none; text-align: center; padding: 32px 16px; transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 8px;">📊</div>
+                    <div style="font-weight: 600; color: var(--text-main);">Inventory</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Manage stock</div>
+                </a>
+            </div>
+        </main>
+    </div>
 
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-3 pt-4">
-				<div class="card" style="background-color: white;">
-					<div class="card-body text-center">
-						<h4 class="card-title">Products</h4>
-						<p>---------------------------------------------</p>
-						<p class="card-text">Manage all the products here.</p>
-						<a href="/admin/products" class="card-link btn btn-primary">Manage</a>
-
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-3 pt-4">
-				<div class="card" style="background-color: white;">
-					<div class="card-body text-center">
-						<h4 class="card-title">Customers</h4>
-						<p>---------------------------------------------</p>
-						<p class="card-text">Manage all the customer here.</p>
-						<a href="/admin/customers" class="card-link btn btn-primary">Manage</a>
-
-					</div>
-				</div>
-			</div>
-			
-			
-			
-		</div>
-	</div>
-
-
-
-	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-		integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-		crossorigin="anonymous"></script>
-	<script
-		src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-		integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-		crossorigin="anonymous"></script>
-	<script
-		src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-		integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-		crossorigin="anonymous"></script>
+    <style>
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    </style>
 </body>
 </html>

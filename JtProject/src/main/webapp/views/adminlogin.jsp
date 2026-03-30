@@ -1,82 +1,69 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <!-- Font Awesome CSS -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-    <title>Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - E-Store</title>
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-    
-    	body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f8f9fa;
+        .auth-container {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
         }
-        .login-container {
-        	max-width: 400px;
-            width: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            background: white;
-        }
-        .login-container .jumbotron {
-            border-radius: 8px;
-        }
-        .input-group-text {
-            background-color: #007bff;
+        .admin-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border-radius: 0.25rem 0 0 0.25rem;
-        }
-        .input-group-prepend .input-group-text {
-            border-right: 0;
-        }
-        .form-control {
-            border-radius: 0 0.25rem 0.25rem 0;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
         }
     </style>
 </head>
+<body class="auth-container">
 
-<body class="bg-dark">
+    <div class="card auth-card animate-fade-in">
+        <div class="auth-header">
+            <span class="admin-badge">Admin Portal</span>
+            <h1>Admin Login</h1>
+            <p>Sign in to manage your store</p>
+        </div>
 
-<div class="login-container p-4">
-    <div class="jumbotron border p-4">
-        <h2 class="text-center">Admin Login</h2>
+        <c:if test="${not empty msg}">
+            <div class="alert alert-danger">${msg}</div>
+        </c:if>
+
         <form action="/admin/loginvalidate" method="post">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-user"></i></span>
-                    </div>
-                    <input type="text" name="username" id="username" placeholder="Admin username" required class="form-control form-control-lg">
-                </div>
+            <div class="input-group">
+                <label for="username">Admin Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter admin username" required>
             </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    </div>
-                    <input type="password" class="form-control form-control-lg" placeholder="Admin Password" required name="password" id="password">
-                </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
             </div>
-            <input type="submit" value="Login" class="btn btn-primary btn-block mt-4">
-            <h3 class="text-center text-danger mt-3">${msg}</h3>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Access Dashboard</button>
         </form>
+
+        <div style="text-align: center; margin-top: 28px;">
+            <a href="/" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">← Back to Store</a>
+        </div>
     </div>
-</div>
 
-
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <style>
+        .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </body>
 </html>
