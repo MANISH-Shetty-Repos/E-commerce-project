@@ -17,12 +17,24 @@ public class productService {
 		return this.productDao.getProducts();
 	}
 	
+	public List<Product> getProductsPaginated(int page, int size, String sortDir){
+		return this.productDao.getProductsPaginated(page, size, sortDir);
+	}
+
+	public long getProductsCount() {
+		return this.productDao.getProductsCount();
+	}
+	
 	public Product addProduct(Product product) {
 		return this.productDao.addProduct(product);
 	}
 	
 	public Product getProduct(int id) {
-		return this.productDao.getProduct(id);
+		Product product = this.productDao.getProduct(id);
+		if (product == null) {
+			throw new com.jtspringproject.JtSpringProject.exception.ResourceNotFoundException("Product not found with id: " + id);
+		}
+		return product;
 	}
 
 	public Product updateProduct(int id,Product product){
@@ -30,7 +42,7 @@ public class productService {
 		return this.productDao.updateProduct(product);
 	}
 	public boolean deleteProduct(int id) {
-		return this.productDao.deletProduct(id);
+		return this.productDao.deleteProduct(id);
 	}
 
 	
