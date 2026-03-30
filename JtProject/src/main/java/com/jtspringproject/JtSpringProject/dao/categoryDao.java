@@ -29,11 +29,11 @@ public class categoryDao {
 
 	@Transactional
 	public List<Category> getCategories() {
-		return this.sessionFactory.getCurrentSession().createQuery("from CATEGORY").list();
+		return this.sessionFactory.getCurrentSession().createQuery("from CATEGORY", Category.class).list();
 	}
 
 	@Transactional
-	public Boolean deletCategory(int id) {
+	public Boolean deleteCategory(int id) {
 
 		Session session = this.sessionFactory.getCurrentSession();
 		Object persistanceInstance = session.load(Category.class, id);
