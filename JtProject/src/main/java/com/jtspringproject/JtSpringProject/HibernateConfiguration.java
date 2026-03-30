@@ -42,18 +42,22 @@ public class HibernateConfiguration {
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(DRIVER);
-        dataSource.setUrl(URL);
-        dataSource.setUsername(USERNAME);
-        dataSource.setPassword(PASSWORD);
+        dataSource.setDriverClassName(DRIVER != null ? DRIVER : "");
+        dataSource.setUrl(URL != null ? URL : "");
+        dataSource.setUsername(USERNAME != null ? USERNAME : "");
+        dataSource.setPassword(PASSWORD != null ? PASSWORD : "");
         return dataSource;
     }
  
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan(PACKAGES_TO_SCAN);
+        DataSource ds = dataSource();
+        if (ds == null) {
+            throw new IllegalStateException("DataSource is null");
+        }
+        sessionFactory.setDataSource(ds);
+        sessionFactory.setPackagesToScan(PACKAGES_TO_SCAN != null ? PACKAGES_TO_SCAN : "");
         Properties hibernateProperties = new Properties();
         hibernateProperties.put("hibernate.dialect", DIALECT);
         hibernateProperties.put("hibernate.show_sql", SHOW_SQL);
@@ -64,9 +68,9 @@ public class HibernateConfiguration {
     }
  
     @Bean
-    public HibernateTransactionManager transactionManager() {
+    public HibernateTransactionManager transactionManager(org.hibernate.SessionFactory sessionFactory) {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactory().getObject());
+        transactionManager.setSessionFactory(sessionFactory);
         return transactionManager;
     }   
 }
