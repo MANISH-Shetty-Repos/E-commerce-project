@@ -1,55 +1,121 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - E-Store</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="auth-container">
 
-<br>
-<div class="container">
-    <div class="col-sm-6">
-        <h3 style="margin-top: 10px">Sign Up Now</h3>
-        <p>Please fill out this to register</p>
-        <form action="newuserregister" method="post">
-            <div class="form-group">
-                <label for="firstName">User Name</label>
-                <input type="text" name="username" id="firstName" required placeholder="Your Username*" required class="form-control form-control-lg">
+    <div class="card auth-card animate-fade-in" style="max-width: 480px;">
+        <div class="auth-header">
+            <div style="font-size: 2.5rem; margin-bottom: 8px;">🛍️</div>
+            <h1>Create Account</h1>
+            <p>Join us and start shopping today</p>
+        </div>
+
+        <c:if test="${not empty msg}">
+            <div class="alert alert-danger">${msg}</div>
+        </c:if>
+
+        <form action="/newuserregister" method="post" onsubmit="return validateForm()">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       placeholder="Choose a username" required minlength="3">
             </div>
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <input type="email" class="form-control form-control-lg" required minlength="6" placeholder="Email*" required name="email" id="email"
-                       aria-describedby="emailHelp">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with
-                    anyone else.</small>
+
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email"
+                       placeholder="you@example.com" required>
+                <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display:block;">
+                    We'll never share your email with anyone.
+                </small>
             </div>
-            <div class="form-group">
+
+            <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control form-control-lg" required placeholder="Password*" required name="password"
-                       id="password">
+                <input type="password" id="password" name="password"
+                       placeholder="Min. 6 characters" required minlength="6">
             </div>
-            <div class="form-group">
-                <label for="Address">Address</label>
-                <textarea class="form-control form-control-lg" rows="3" placeholder="Enter Your Address" name="address"></textarea>
+
+            <div class="input-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword"
+                       placeholder="Re-enter your password" required>
+                <small id="passwordError" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 4px;">
+                    Passwords do not match.
+                </small>
             </div>
-<span style="margin-top: 10px">Already have an account <a class="linkControl" href="/">Login here</a></span> <br><br>
-            <input type="submit" value="Register" class="btn btn-primary btn-block"><br>
-            <br><h3 style="color:red;">${msg}</h3>
-            <br>
+
+            <div class="input-group">
+                <label for="address">Delivery Address</label>
+                <textarea id="address" name="address" rows="3"
+                          placeholder="Enter your full delivery address"
+                          style="width:100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; resize: vertical; transition: border-color 0.2s, box-shadow 0.2s;"
+                          onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(99,102,241,0.1)'"
+                          onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                Create My Account
+            </button>
         </form>
+
+        <div style="text-align: center; margin-top: 28px; font-size: 0.875rem; color: var(--text-muted);">
+            Already have an account?
+            <a href="/login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign In</a>
+        </div>
+
+        <div style="text-align: center; margin-top: 12px;">
+            <a href="/" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">← Back to Home</a>
+        </div>
     </div>
-</div>
 
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        textarea:focus {
+            outline: none;
+        }
+    </style>
 
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script>
+        function validateForm() {
+            const pwd = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            const errorEl = document.getElementById('passwordError');
+            if (pwd !== confirm) {
+                errorEl.style.display = 'block';
+                document.getElementById('confirmPassword').style.borderColor = 'var(--danger)';
+                return false;
+            }
+            errorEl.style.display = 'none';
+            return true;
+        }
+
+        // Real-time password match feedback
+        document.getElementById('confirmPassword').addEventListener('input', function () {
+            const pwd = document.getElementById('password').value;
+            const errorEl = document.getElementById('passwordError');
+            if (this.value && this.value !== pwd) {
+                errorEl.style.display = 'block';
+                this.style.borderColor = 'var(--danger)';
+            } else {
+                errorEl.style.display = 'none';
+                this.style.borderColor = this.value ? 'var(--success)' : 'var(--border)';
+            }
+        });
+    </script>
 </body>
 </html>
