@@ -4,108 +4,108 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import org.springframework.security.web.SecurityFilterChain;
 import com.jtspringproject.JtSpringProject.models.User;
 import com.jtspringproject.JtSpringProject.services.userService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@EnableWebSecurity
+@Slf4j
 public class SecurityConfiguration {
-	
-	userService UserService;
 
-	public SecurityConfiguration(userService UserService) {
-		this.UserService = UserService;
-	}
+    private final userService userService;
 
-	@Configuration
-	@Order(1)
-	public static class AdminConfigurationAdapter{
-		
-		@Bean
-		SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
-            http.antMatcher("/admin/**") 
-                   .authorizeHttpRequests(requests -> requests
-            		 .requestMatchers(new AntPathRequestMatcher("/admin/login")).permitAll()
-                     .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
-                    )
-                    .formLogin(login -> login
-                            .loginPage("/admin/login")
-                            .loginProcessingUrl("/admin/loginvalidate")
-                            .successHandler((request, response, authentication) -> {
-                                response.sendRedirect("/admin/"); // Redirect on success
-                            })
-                            .failureHandler((request, response, exception) -> {
-                                response.sendRedirect("/admin/login?error=true"); // Redirect on failure
-                            }))
-                    
-                    .logout(logout -> logout.logoutUrl("/admin/logout")
-                            .logoutSuccessUrl("/admin/login")
-                            .deleteCookies("JSESSIONID"))
-                    .exceptionHandling(exception -> exception
-                            .accessDeniedPage("/403")  // Custom 403 page
-                        );
-            http.csrf(csrf -> csrf.disable());
-			return http.build();
-		}
-	}
-	
-	@Configuration
-	@Order(2)
-	public static class UserConfigurationAdapter{
-		
-		@Bean
-		SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests(requests -> requests
-            		.antMatchers("/login", "/register", "/newuserregister" ,"/test", "/test2").permitAll()
-                    .antMatchers("/**").hasRole("USER"))
-                    .formLogin(login -> login
-                            .loginPage("/login")
-                            .loginProcessingUrl("/userloginvalidate")
-                            .successHandler((request, response, authentication) -> {
-                                response.sendRedirect("/"); // Redirect on success
-                            })
-                            .failureHandler((request, response, exception) -> {
-                                response.sendRedirect("/login?error=true"); // Redirect on failure
-                            }))
-                    
-                    .logout(logout -> logout.logoutUrl("/logout")
-                            .logoutSuccessUrl("/login")
-                            .deleteCookies("JSESSIONID"))
-                    .exceptionHandling(exception -> exception
-                            .accessDeniedPage("/403")  // Custom 403 page
-                        );
+    public SecurityConfiguration(userService userService) {
+        this.userService = userService;
+    }
 
-            http.csrf(csrf -> csrf.disable());
-			return http.build();
-		}
-	}
-	
-	@Bean
-	UserDetailsService userDetailsService() {
-		return username -> {
-			User user = UserService.getUserByUsername(username);
-			if(user == null) {
-	            throw new UsernameNotFoundException("User with username " + username + " not found.");
-			}
-			String role =  user.getRole().equals("ROLE_ADMIN") ? "ADMIN":"USER"; 
-			
-			return org.springframework.security.core.userdetails.User
-					.withUsername(username)
-					.passwordEncoder(input->passwordEncoder().encode(input))
-					.password(user.getPassword())
-					.roles(role)
-					.build();
-		};
-	}
+    // Chain 1: Admin Area
+    @Bean
+    @Order(1)
+    public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+        http
+                .antMatcher("/admin/**")
+                .authorizeRequests()
+                .antMatchers("/admin/login").permitAll()
+                .anyRequest().hasRole("ADMIN")
+                .and()
+                .formLogin()
+                .loginPage("/admin/login")
+                .loginProcessingUrl("/admin/loginvalidate")
+                .defaultSuccessUrl("/admin/Dashboard", true)
+                .failureUrl("/admin/login?error=true")
+                .and()
+                .logout()
+                .logoutUrl("/admin/logout")
+                .logoutSuccessUrl("/admin/login")
+                .deleteCookies("JSESSIONID")
+                .and()
+                .csrf().disable();
 
-	@Bean
-	PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+        return http.build();
+    }
+
+    // Chain 2: User Area and everything else
+    @Bean
+    @Order(2)
+    public SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                // Public paths
+                .antMatchers("/login", "/register", "/newuserregister", "/test", "/test2").permitAll()
+                .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico")
+                .permitAll()
+                // Protected paths
+                .anyRequest().hasAnyRole("USER", "ADMIN")
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/userloginvalidate")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/login?error=true")
+                .and()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login")
+                .deleteCookies("JSESSIONID")
+                .and()
+                .csrf().disable();
+
+        return http.build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            log.info("Attempting authentication for user: {}", username);
+            User user = userService.getUserByUsername(username);
+
+            if (user == null) {
+                log.warn("Authentication failed: User not found: {}", username);
+                throw new UsernameNotFoundException("User not found: " + username);
+            }
+
+            // Map DB Roles to Spring Security Roles
+            String securityRole = "ROLE_ADMIN".equals(user.getRole()) ? "ADMIN" : "USER";
+
+            log.info("Authentication successful for [{}]. Security role assigned: [{}]", user.getUsername(),
+                    securityRole);
+
+            return org.springframework.security.core.userdetails.User
+                    .withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .roles(securityRole)
+                    .build();
+        };
+    }
 }
