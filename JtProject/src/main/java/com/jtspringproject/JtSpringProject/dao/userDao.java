@@ -10,11 +10,17 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.jtspringproject.JtSpringProject.models.User;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Repository
+@Slf4j
 public class userDao {
 
     @Autowired
     private SessionFactory sessionFactory;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public void setSessionFactory(SessionFactory sf) {
         this.sessionFactory = sf;
@@ -30,7 +36,7 @@ public class userDao {
     @Transactional
     public User saveUser(User user) {
         this.sessionFactory.getCurrentSession().saveOrUpdate(user);
-        System.out.println("User added: " + user.getId());
+        log.info("User added: {}", user.getId());
         return user;
     }
 
@@ -42,7 +48,7 @@ public class userDao {
 
         try {
             User user = query.getSingleResult();
-            if (password.equals(user.getPassword())) { // Plain check; replace with encoder in production
+            if (passwordEncoder.matches(password, user.getPassword())) { 
                 return user;
             } else {
                 return null; // Return null if password doesn't match
