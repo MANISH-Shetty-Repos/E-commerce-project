@@ -5,6 +5,10 @@ import com.jtspringproject.JtSpringProject.models.User;
 import com.jtspringproject.JtSpringProject.services.userService;
 import com.jtspringproject.JtSpringProject.services.productService;
 import com.jtspringproject.JtSpringProject.dto.UserDto;
+import com.jtspringproject.JtSpringProject.models.Cart;
+import com.jtspringproject.JtSpringProject.models.CartProduct;
+import com.jtspringproject.JtSpringProject.services.cartService;
+import com.jtspringproject.JtSpringProject.dao.cartProductDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -24,11 +28,16 @@ public class UserController {
 
 	private final userService userService;
 	private final productService productService;
+	private final cartService cartService;
+	private final cartProductDao cartProductDao;
 
 	@Autowired
-	public UserController(userService userService, productService productService) {
+	public UserController(userService userService, productService productService, cartService cartService,
+			cartProductDao cartProductDao) {
 		this.userService = userService;
 		this.productService = productService;
+		this.cartService = cartService;
+		this.cartProductDao = cartProductDao;
 	}
 
 	@GetMapping("/register")
@@ -38,8 +47,54 @@ public class UserController {
 	}
 
 	@GetMapping("/buy")
-	public String buy() {
-		return "buy";
+	public ModelAndView buy() {
+		ModelAndView mv = new ModelAndView("buy");
+		String username = "";
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
+
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			List<Product> cartProducts = cartService.getProductsInCart(user);
+			mv.addObject("cartProducts", cartProducts);
+
+			int total = cartProducts.stream().mapToInt(Product::getPrice).sum();
+			mv.addObject("total", total);
+		}
+		return mv;
+	}
+
+	@GetMapping("/user/addtocart")
+	public String addtocart(@RequestParam("pid") int productId) {
+		String username = "";
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
+
+		User user = userService.getUserByUsername(username);
+		Product product = productService.getProduct(productId);
+
+		if (user != null && product != null) {
+			List<Cart> existingCarts = cartService.getCartByUserId(user.getId());
+			Cart userCart;
+
+			if (existingCarts.isEmpty()) {
+				userCart = new Cart();
+				userCart.setCustomer(user);
+				userCart = cartService.addCart(userCart);
+			} else {
+				userCart = existingCarts.get(0);
+			}
+
+			CartProduct cartProduct = new CartProduct(userCart, product);
+			cartProductDao.addCartProduct(cartProduct);
+			log.info("Product {} added to cart for user {}", product.getName(), username);
+		}
+
+		return "redirect:/user/products";
 	}
 
 	@GetMapping("/login")
@@ -85,6 +140,12 @@ public class UserController {
 			@RequestParam(defaultValue = "6") int size) {
 
 		ModelAndView mView = new ModelAndView("uproduct");
+		String username = "";
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
+		mView.addObject("username", username);
 
 		List<Product> products = this.productService.getProductsPaginated(page, size, "asc");
 		long totalProducts = this.productService.getProductsCount();
@@ -142,9 +203,28 @@ public class UserController {
 		}
 	}
 
-	@GetMapping("/profileDisplay")
-	public String profileDisplay(Model model) {
+	@GetMapping("/user/profile")
+	public String userProfile(Model model) {
+		String username = "";
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
+		User user = userService.getUserByUsername(username);
 
+		if (user != null) {
+			model.addAttribute("userid", user.getId());
+			model.addAttribute("username", user.getUsername());
+			model.addAttribute("email", user.getEmail());
+			model.addAttribute("address", user.getAddress());
+		} else {
+			model.addAttribute("msg", "User not found");
+		}
+		return "profile";
+	}
+
+	@GetMapping("/user/profile/edit")
+	public String profileEdit(Model model) {
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
@@ -162,6 +242,31 @@ public class UserController {
 		}
 
 		return "updateProfile";
+	}
+
+	@PostMapping("/updateuser")
+	public String updateUserProfile(@RequestParam("userid") int userid, @RequestParam("username") String username,
+			@RequestParam("email") String email, @RequestParam("password") String password,
+			@RequestParam("address") String address) {
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			user.setUsername(username);
+			user.setEmail(email);
+			user.setAddress(address);
+			// Update password only if provided
+			if (password != null && !password.isEmpty()) {
+				user.setPassword(password);
+			}
+			userService.addUser(user);
+
+			org.springframework.security.authentication.UsernamePasswordAuthenticationToken newAuthentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+					username,
+					user.getPassword(),
+					SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+
+			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+		}
+		return "redirect:/user/profile";
 	}
 
 }
