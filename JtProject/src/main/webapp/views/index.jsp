@@ -1,114 +1,118 @@
-<%@page import="java.sql.*"%>
-<%@page import="java.util.*"%>
-<%@page import="java.text.*"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-          <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-    <title>Document</title>
-    
-</head>
-<body>
-
-<section class="wrapper">
-        <div class="container-fostrap">
-<nav class="navbar navbar-expand-lg navbar-light bg-light" >
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img th:src="@{/images/logo.png}"  src="../static/images/logo.png" width="auto" height="40" class="d-inline-block align-top" alt=""/>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-		
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <h4>Welcome ${ username } </h4>
-            <ul class="navbar-nav mr-auto"></ul>
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" th:href="@{/}" href="#">CART</a>
-                </li>
-                 <li class="nav-item active">
-                    <a class="nav-link" href="profileDisplay" >Profile</a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" sec:authorize="isAuthenticated()" href="logout">Logout</a>
-                </li>
-               
-            </ul>
-
-        </div>
-    </div>
-</nav>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perishable Shop</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-  <style>
-    body {
-      padding: 20px;
-    }
-     .card-body {
-          height: 250px; /* Set a fixed height for the card body */
-        }
-
-        .card-img-top {
-          max-height: 100px; /* Limit the height of the product image */
-          object-fit: contain;
-        }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="E-Store — Shop the latest products at great prices.">
+    <title>E-Store — Shop Now</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/home.css">
 </head>
-<body class="bg-light">
-  <header>
+<body>
 
-  </header>
-  <main>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">🛍️ E-Store</a>
 
-    <div class="container">
-      <h1>Welcome to Perishable Shop</h1>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/user/products">Products</a></li>
+                <c:choose>
+                    <c:when test="${not empty username}">
+                        <li><a href="/buy">Cart 🛒</a></li>
+                        <li><a href="/user/orders">My Orders</a></li>
+                        <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
+                        <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
+                    </c:when>
+                    <c:otherwise>
+                        <li><a href="/login" class="btn btn-nav-login">Login</a></li>
+                        <li><a href="/register" class="btn btn-nav-register">Sign Up</a></li>
+                    </c:otherwise>
+                </c:choose>
+            </ul>
 
+            <!-- Mobile hamburger -->
+            <button class="hamburger" onclick="toggleMenu()" id="hamburgerBtn">☰</button>
+        </div>
+    </nav>
 
-      <div class="row">
-      <c:forEach var="product" items="${products}">
-        <div class="col-md-3">
-          <div class="card mb-4">
-            <img class="card-img-top" src="${product.image}" alt="Product 1">
-            <div class="card-body">
-             <b> <h4 class="card-title">${product.name}</h4></b>
-              <h5 class="card-text">Category: ${product.category.name}</h5>
-              <h5 class="card-text">Price: ${product.price}</h5>
-              <p class="card-text">Description: ${product.description}</p>
-              <a href="#" class="btn btn-primary">Add to Cart</a>
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Premium Shopping,<br><span class="gradient-text">Delivered to You.</span></h1>
+            <p class="hero-subtitle">Explore our curated collection of top products at unbeatable prices.</p>
+            <div class="hero-actions">
+                <a href="/user/products" class="btn btn-primary">Browse Products</a>
+                <a href="/register" class="btn btn-secondary">Join for Free</a>
             </div>
-          </div>
-        </div> </c:forEach>
-      </div>
+        </div>
+    </section>
 
-    </div>
-  </main>
-  <footer>
-    <div class="container">
-      <p>&copy; 2023 Perishable Shop. All rights reserved
+    <!-- ===== PRODUCT GRID ===== -->
+    <section class="products-section">
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <p>Hand-picked items just for you</p>
+        </div>
 
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <div class="products-grid">
+            <c:forEach var="product" items="${products}">
+                <div class="product-card">
+                    <div class="product-img-wrap">
+                        <img src="${product.image}" alt="${product.name}" class="product-img"
+                             onerror="this.src='https://placehold.co/300x200/e2e8f0/94a3b8?text=No+Image'">
+                        <span class="product-badge">${product.category.name}</span>
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.description}</p>
+                        <div class="product-footer">
+                            <span class="product-price">₹${product.price}</span>
+                            <a href="/user/addtocart?pid=${product.id}" class="btn btn-primary btn-sm">
+                                🛒 Add to Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
+
+            <!-- Empty state -->
+            <c:if test="${empty products}">
+                <div class="empty-state">
+                    <div style="font-size: 4rem;">🛍️</div>
+                    <h3>No products yet</h3>
+                    <p>Check back soon — new items are being added.</p>
+                </div>
+            </c:if>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span style="font-size: 1.5rem; font-weight: 800;">🛍️ E-Store</span>
+                <p>Your trusted online marketplace.</p>
+            </div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/user/products">Products</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            </div>
+            <p class="footer-copy">&copy; 2026 E-Store. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const links = document.querySelector('.nav-links');
+            links.classList.toggle('open');
+        }
+    </script>
 </body>
 </html>

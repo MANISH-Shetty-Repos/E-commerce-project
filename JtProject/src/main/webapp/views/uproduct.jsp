@@ -1,130 +1,185 @@
-<%@page import="java.sql.*"%>
-<%@page import="java.util.*"%>
-<%@page import="java.text.*"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-	content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-<link rel="stylesheet"
-	href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-	integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-	crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse all available products on E-Store.">
+    <title>All Products - E-Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <style>
+        /* Page-specific styles for product listing */
+        .page-header {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f5f3ff 100%);
+            padding: 48px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+        .page-header p { color: var(--text-muted); margin-top: 8px; }
 
-<title>Document</title>
+        .filter-bar {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-bar input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        .filter-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+        .product-count {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    </style>
 </head>
-<body class="bg-light">
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-		<div class="container-fluid">
-			<a class="navbar-brand" href="#"> <img
-				th:src="@{/images/logo.png}" src="../static/images/logo.png"
-				width="auto" height="40" class="d-inline-block align-top" alt="" />
-			</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse"
-				data-target="#navbarSupportedContent"
-				aria-controls="navbarSupportedContent" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
+<body>
 
-			<div class="collapse navbar-collapse" id="navbarSupportedContent">
-				<ul class="navbar-nav mr-auto"></ul>
-				<ul class="navbar-nav">
-					<li class="nav-item active"><a class="nav-link" href="/adminhome">Home
-							Page</a></li>
-					<li class="nav-item active"><a class="nav-link" href="/logout">Logout</a>
-					</li>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">🛍️ E-Store</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/user/products" style="color: var(--primary); font-weight: 600;">Products</a></li>
+                <c:choose>
+                    <c:when test="${not empty username}">
+                        <li><a href="/buy">Cart 🛒</a></li>
+                        <li><a href="/user/orders">My Orders</a></li>
+                        <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
+                        <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
+                    </c:when>
+                    <c:otherwise>
+                        <li><a href="/login" class="btn btn-nav-login">Login</a></li>
+                        <li><a href="/register" class="btn btn-nav-register">Sign Up</a></li>
+                    </c:otherwise>
+                </c:choose>
+            </ul>
+            <button class="hamburger" onclick="toggleMenu()">☰</button>
+        </div>
+    </nav>
 
-				</ul>
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="page-header">
+        <h1>All Products</h1>
+        <p>Find everything you need in one place</p>
+    </div>
 
-			</div>
-		</div>
-	</nav>
-	<div class="container-fluid">
+    <!-- ===== FILTER BAR ===== -->
+    <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="🔍  Search products by name..." onkeyup="filterProducts()">
+        <span class="product-count" id="productCount"></span>
+    </div>
 
+    <!-- ===== PRODUCT GRID ===== -->
+    <section class="products-section" style="padding-top: 32px;">
+        <div class="products-grid" id="productGrid">
+            <c:forEach var="product" items="${products}">
+                <div class="product-card" data-name="${product.name}" data-category="${product.category.name}">
+                    <div class="product-img-wrap">
+                        <img src="${product.image}" alt="${product.name}" class="product-img"
+                             onerror="this.src='https://placehold.co/300x200/e2e8f0/94a3b8?text=${product.name}'">
+                        <span class="product-badge">${product.category.name}</span>
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.description}</p>
 
-		<table class="table">
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <span style="font-size: 0.78rem; background: #f1f5f9; color: var(--text-muted); padding: 3px 10px; border-radius: 20px; font-weight: 500;">
+                                Qty: ${product.quantity}
+                            </span>
+                            <span style="font-size: 0.78rem; background: #f1f5f9; color: var(--text-muted); padding: 3px 10px; border-radius: 20px; font-weight: 500;">
+                                Weight: ${product.weight}g
+                            </span>
+                        </div>
 
-			<tr>
-				<th scope="col">Serial No.</th>
-				<th scope="col">Product Name</th>
-				<th scope="col">Category</th>
-				<th scope="col">Preview</th>
-				<th scope="col">Quantity</th>
-				<th scope="col">Price</th>
-				<th scope="col">Weight</th>
-				<th scope="col">Descrption</th>
-				<th scope="col">Buy</th>
+                        <div class="product-footer">
+                            <span class="product-price">₹${product.price}</span>
+                            <a href="/user/addtocart?pid=${product.id}" class="btn btn-primary btn-sm">
+                                🛒 Add to Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
 
-			</tr>
-			<tbody>
-			<c:forEach var="product" items="${products}">
-				<tr>
+            <c:if test="${empty products}">
+                <div class="empty-state">
+                    <div style="font-size: 4rem;">📦</div>
+                    <h3>No products available</h3>
+                    <p>New products are being added — check back soon!</p>
+                </div>
+            </c:if>
+        </div>
+    </section>
 
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span style="font-size: 1.5rem; font-weight: 800;">🛍️ E-Store</span>
+                <p>Your trusted online marketplace.</p>
+            </div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/user/products">Products</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            </div>
+            <p class="footer-copy">&copy; 2026 E-Store. All rights reserved.</p>
+        </div>
+    </footer>
 
+    <script>
+        function toggleMenu() {
+            document.querySelector('.nav-links').classList.toggle('open');
+        }
 
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            let visible = 0;
+            cards.forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                const category = card.dataset.category.toLowerCase();
+                const match = name.includes(query) || category.includes(query);
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('productCount').textContent =
+                visible + ' product' + (visible !== 1 ? 's' : '') + ' found';
+        }
 
-					<td>
-                    						${product.id}
-                    					</td>
-                    					<td>
-                    						${product.name }
-                    					</td>
-                    					<td>
-                    						${product.category.name}
-
-                    					</td>
-
-                    					<td><img src="${product.image}"
-                    						height="100px" width="100px"></td>
-                    					<td>
-                    						${product.quantity }
-                    					</td>
-                    					<td>S
-                    						${product.price }
-                    					</td>
-                    					<td>
-                    						${product.weight }
-                    					</td>
-                    					<td>
-                    						${product.description }
-                    					</td>
-
-
-					<td>
-
-
-				    <form action="products/addtocart" method="get">
-							<input type="hidden" name="id" value="${product.id}">
-							<input type="submit" value="Add To Cart" class="btn btn-warning">
-					</form>
-					</td>
-
-
-				</tr>
-           </c:forEach>
-
-			</tbody>
-		</table>
-
-	</div>
-
-
-
-	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-		integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-		crossorigin="anonymous"></script>
-	<script
-		src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-		integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-		crossorigin="anonymous"></script>
-	<script
-		src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-		integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-		crossorigin="anonymous"></script>
+        // Run on load to show total count
+        window.onload = () => {
+            const total = document.querySelectorAll('.product-card').length;
+            document.getElementById('productCount').textContent =
+                total + ' product' + (total !== 1 ? 's' : '') + ' available';
+        };
+    </script>
 </body>
 </html>
