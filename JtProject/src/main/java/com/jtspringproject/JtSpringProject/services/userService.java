@@ -1,6 +1,6 @@
 package com.jtspringproject.JtSpringProject.services;
 
-import com.jtspringproject.JtSpringProject.models.*;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,9 @@ import com.jtspringproject.JtSpringProject.models.User;
 public class userService {
 	@Autowired
 	private userDao userDao;
+
+	@Autowired
+	private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 	
 	public List<User> getUsers(){
 		return this.userDao.getAllUser();
@@ -21,10 +24,10 @@ public class userService {
 	
 	public User addUser(User user) {
 		try {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
 			return this.userDao.saveUser(user);
 		} catch (DataIntegrityViolationException e) {
-			// handle unique constraint violation, e.g., by throwing a custom exception
-			throw new RuntimeException("Add user error");
+			throw new com.jtspringproject.JtSpringProject.exception.UserAlreadyExistsException("Username is already taken.");
 		}
 	}
 	
