@@ -146,7 +146,6 @@ public class AdminController {
 		log.info("Adding product to category ID: {}", categoryId);
 		Category category = this.categoryService.getCategory(categoryId);
 		Product product = new Product();
-		product.setId(categoryId);
 		product.setName(name);
 		product.setCategory(category);
 		product.setDescription(description);
