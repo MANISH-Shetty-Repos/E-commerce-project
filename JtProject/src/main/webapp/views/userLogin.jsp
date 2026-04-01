@@ -23,7 +23,7 @@
             </div>
         </c:if>
 
-        <form action="/loginvalidate" method="post">
+        <form action="/userloginvalidate" method="post">
             <div class="input-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter your username" required>

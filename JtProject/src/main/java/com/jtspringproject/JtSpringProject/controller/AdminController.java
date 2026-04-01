@@ -227,24 +227,29 @@ public class AdminController {
 		return "updateProfile";
 	}
 	
-	@RequestMapping(value = "updateuser",method=RequestMethod.POST)
-	public String updateUserProfile(@RequestParam("userid") int userid,@RequestParam("username") String username, @RequestParam("email") String email, @RequestParam("password") String password, @RequestParam("address") String address) 
-	{
-		User user = userService.getUserByUsername(username);
+	@RequestMapping(value = "updateuser", method = RequestMethod.POST)
+	public String updateUserProfile(@RequestParam("userid") int userid, @RequestParam("username") String username,
+			@RequestParam("email") String email, @RequestParam("password") String password,
+			@RequestParam("address") String address, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		User user = userService.getUserById(userid);
 		if (user != null) {
 			user.setUsername(username);
 			user.setEmail(email);
 			user.setAddress(address);
-			userService.addUser(user); 
-			
-			Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
-		            username,
-		            user.getPassword(),
-		            SecurityContextHolder.getContext().getAuthentication().getAuthorities());
 
-		    SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+			userService.updateExistingUser(user, (password != null && !password.isEmpty()) ? password : null);
+
+			Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
+					username,
+					user.getPassword(),
+					SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+
+			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+			redirectAttributes.addFlashAttribute("msg", "Profile updated successfully!");
+		} else {
+			redirectAttributes.addFlashAttribute("msg", "Profile update failed. User not found.");
 		}
-		return "redirect:index";
+		return "redirect:/user/profile";
 	}
 
 }

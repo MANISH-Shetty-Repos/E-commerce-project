@@ -82,7 +82,7 @@
 
                 <div style="display: flex; gap: 12px; margin-top: 8px;">
                     <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
-                    <a href="/" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
+                    <a href="/user/profile" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
                 </div>
             </form>
         </div>

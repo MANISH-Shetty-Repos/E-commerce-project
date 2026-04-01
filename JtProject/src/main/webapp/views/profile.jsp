@@ -45,6 +45,10 @@
     </nav>
 
     <div class="profile-container">
+        <c:if test="${not empty msg}">
+            <div class="alert alert-success" style="margin-bottom: 24px;">${msg}</div>
+        </c:if>
+        
         <div class="profile-header">
             <div class="profile-avatar">${username.substring(0,1).toUpperCase()}</div>
             <div class="profile-info">

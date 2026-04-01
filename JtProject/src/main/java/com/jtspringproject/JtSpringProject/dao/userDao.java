@@ -78,4 +78,9 @@ public class userDao {
             return null;
         }
     }
+
+    @Transactional
+    public User getUserById(int id) {
+        return sessionFactory.getCurrentSession().get(User.class, id);
+    }
 }

@@ -115,7 +115,7 @@ public class UserController {
 		ModelAndView mView = new ModelAndView("index");
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null) {
+		if (auth != null && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
 			username = auth.getName();
 		}
 		mView.addObject("username", username);
@@ -142,7 +142,7 @@ public class UserController {
 		ModelAndView mView = new ModelAndView("uproduct");
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null) {
+		if (auth != null && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
 			username = auth.getName();
 		}
 		mView.addObject("username", username);
@@ -247,17 +247,14 @@ public class UserController {
 	@PostMapping("/updateuser")
 	public String updateUserProfile(@RequestParam("userid") int userid, @RequestParam("username") String username,
 			@RequestParam("email") String email, @RequestParam("password") String password,
-			@RequestParam("address") String address) {
-		User user = userService.getUserByUsername(username);
+			@RequestParam("address") String address, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		User user = userService.getUserById(userid);
 		if (user != null) {
 			user.setUsername(username);
 			user.setEmail(email);
 			user.setAddress(address);
-			// Update password only if provided
-			if (password != null && !password.isEmpty()) {
-				user.setPassword(password);
-			}
-			userService.addUser(user);
+			
+			userService.updateExistingUser(user, (password != null && !password.isEmpty()) ? password : null);
 
 			org.springframework.security.authentication.UsernamePasswordAuthenticationToken newAuthentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
 					username,
@@ -265,6 +262,9 @@ public class UserController {
 					SecurityContextHolder.getContext().getAuthentication().getAuthorities());
 
 			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+			redirectAttributes.addFlashAttribute("msg", "Profile updated successfully!");
+		} else {
+			redirectAttributes.addFlashAttribute("msg", "Profile update failed. User not found.");
 		}
 		return "redirect:/user/profile";
 	}

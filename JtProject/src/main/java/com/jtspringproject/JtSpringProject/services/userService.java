@@ -39,4 +39,16 @@ public class userService {
 	public User getUserByUsername(String username) {
 	        return userDao.getUserByUsername(username);
 	    }
+
+	public User getUserById(int id) {
+		return userDao.getUserById(id);
+	}
+
+	public User updateExistingUser(User user, String newPassword) {
+		if (newPassword != null && !newPassword.isEmpty()) {
+			user.setPassword(passwordEncoder.encode(newPassword));
+		}
+		// No password change, keep existing encoded password as is.
+		return this.userDao.saveUser(user);
+	}
 }

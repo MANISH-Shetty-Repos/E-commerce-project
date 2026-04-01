@@ -58,7 +58,7 @@ public class SecurityConfiguration {
         http
                 .authorizeRequests()
                 // Public paths
-                .antMatchers("/login", "/register", "/newuserregister", "/test", "/test2").permitAll()
+                .antMatchers("/", "/user/products", "/login", "/register", "/newuserregister", "/test", "/test2").permitAll()
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico")
                 .permitAll()
@@ -73,7 +73,7 @@ public class SecurityConfiguration {
                 .and()
                 .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/")
                 .deleteCookies("JSESSIONID")
                 .and()
                 .csrf().disable();
