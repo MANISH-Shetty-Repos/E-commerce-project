@@ -45,10 +45,12 @@
         <div class="hero-content">
             <h1 class="hero-title">Premium Shopping,<br><span class="gradient-text">Delivered to You.</span></h1>
             <p class="hero-subtitle">Explore our curated collection of top products at unbeatable prices.</p>
-            <div class="hero-actions">
-                <a href="/user/products" class="btn btn-primary">Browse Products</a>
-                <a href="/register" class="btn btn-secondary">Join for Free</a>
-            </div>
+            <c:if test="${empty username}">
+                <div class="hero-actions">
+                    <a href="/user/products" class="btn btn-primary">Browse Products</a>
+                    <a href="/register" class="btn btn-secondary">Join for Free</a>
+                </div>
+            </c:if>
         </div>
     </section>
 
