@@ -103,8 +103,10 @@
             <div class="footer-links">
                 <a href="/">Home</a>
                 <a href="/user/products">Products</a>
-                <a href="/login">Login</a>
-                <a href="/register">Register</a>
+                <c:if test="${empty username}">
+                    <a href="/login">Login</a>
+                    <a href="/register">Register</a>
+                </c:if>
             </div>
             <p class="footer-copy">&copy; 2026 E-Store. All rights reserved.</p>
         </div>
