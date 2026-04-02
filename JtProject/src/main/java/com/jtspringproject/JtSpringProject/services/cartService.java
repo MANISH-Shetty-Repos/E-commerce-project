@@ -39,8 +39,16 @@ public class cartService {
         return cartDao.getProductsInCart(user);
     }
 
+    public List<com.jtspringproject.JtSpringProject.models.CartProduct> getCartProductsInCart(User user) {
+        return cartDao.getCartProductsInCart(user);
+    }
+
     public void clearCart(User user) {
         cartDao.clearCart(user);
+    }
+
+    public void clearSelectedItems(User user, List<Integer> productIds) {
+        cartDao.clearSelectedItems(user, productIds);
     }
 
 

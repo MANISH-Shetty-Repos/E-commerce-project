@@ -3,6 +3,7 @@ package com.jtspringproject.JtSpringProject.dao;
 import java.util.List;
 
 import com.jtspringproject.JtSpringProject.models.Cart;
+import com.jtspringproject.JtSpringProject.models.CartProduct;
 import com.jtspringproject.JtSpringProject.models.Product;
 import com.jtspringproject.JtSpringProject.models.User;
 import org.hibernate.SessionFactory;
@@ -47,10 +48,36 @@ public class cartDao {
     }
 
     @Transactional
-    public void clearCart(User user) {
-        this.sessionFactory.getCurrentSession()
-                .createQuery("delete from CartProduct cp where cp.cart.customer = :user")
+    public List<CartProduct> getCartProductsInCart(User user) {
+        return this.sessionFactory.getCurrentSession()
+                .createQuery("from CartProduct cp where cp.cart.customer = :user", CartProduct.class)
                 .setParameter("user", user)
+                .list();
+    }
+
+    @Transactional
+    public void clearCart(User user) {
+        List<Cart> carts = getCartsByCustomerID(user.getId());
+        if (carts.isEmpty()) return;
+        int cartId = carts.get(0).getId();
+
+        this.sessionFactory.getCurrentSession()
+                .createQuery("delete from CartProduct cp where cp.id.cartId = :cartId")
+                .setParameter("cartId", cartId)
+                .executeUpdate();
+    }
+
+    @Transactional
+    public void clearSelectedItems(User user, List<Integer> productIds) {
+        // Fetch cart first to get ID and avoid JOIN in DELETE
+        List<Cart> carts = getCartsByCustomerID(user.getId());
+        if (carts.isEmpty()) return;
+        int cartId = carts.get(0).getId();
+
+        this.sessionFactory.getCurrentSession()
+                .createQuery("delete from CartProduct cp where cp.id.cartId = :cartId and cp.id.productId in (:pids)")
+                .setParameter("cartId", cartId)
+                .setParameterList("pids", productIds)
                 .executeUpdate();
     }
 

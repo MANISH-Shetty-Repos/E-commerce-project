@@ -155,3 +155,30 @@ input:focus {
     color: #166534;
     border: 1px solid #bbf7d0;
 }
+
+/* === CART BADGE STYLE === */
+.nav-links li a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background-color: var(--danger);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    padding: 0 4px;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

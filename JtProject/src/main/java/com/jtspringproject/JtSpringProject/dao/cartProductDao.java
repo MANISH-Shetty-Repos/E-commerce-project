@@ -26,13 +26,30 @@ public class cartProductDao {
     }
 
     @Transactional
+    public CartProduct getCartProductByCartIdAndProductId(int cartId, int productId) {
+        return this.sessionFactory.getCurrentSession()
+                .createQuery("from CartProduct where cart.id = :cartId and product.id = :productId", CartProduct.class)
+                .setParameter("cartId", cartId)
+                .setParameter("productId", productId)
+                .uniqueResult();
+    }
+
+    @Transactional
+    public List<CartProduct> getCartProductsByCartId(int cartId) {
+        return this.sessionFactory.getCurrentSession()
+                .createQuery("from CartProduct where cart.id = :cartId", CartProduct.class)
+                .setParameter("cartId", cartId)
+                .list();
+    }
+
+    @Transactional
     public List<CartProduct> getCartProducts() {
-        return this.sessionFactory.getCurrentSession().createQuery("from CART_PRODUCT", CartProduct.class).list();
+        return this.sessionFactory.getCurrentSession().createQuery("from CartProduct", CartProduct.class).list();
     }
 
     @Transactional
     public List<Product> getProductByCartID(Integer cart_id) {
-        String sql = "SELECT product_id FROM cart_product WHERE cart_id = :cart_id";
+        String sql = "SELECT product_id FROM CART_PRODUCT WHERE cart_id = :cart_id";
         @SuppressWarnings("unchecked")
         List<Integer> productIds = this.sessionFactory.getCurrentSession()
                 .createNativeQuery(sql)
@@ -41,7 +58,7 @@ public class cartProductDao {
 
         if (productIds.isEmpty()) return new java.util.ArrayList<>();
 
-        sql = "SELECT * FROM product WHERE id IN (:product_ids)";
+        sql = "SELECT * FROM PRODUCT WHERE product_id IN (:product_ids)";
         return this.sessionFactory.getCurrentSession()
                 .createNativeQuery(sql, Product.class)
                 .setParameterList("product_ids", productIds)

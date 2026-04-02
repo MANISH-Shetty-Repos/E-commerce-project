@@ -23,7 +23,7 @@ public class OrderDao {
     @Transactional
     public List<Order> getOrdersByUserId(int userId) {
         return this.sessionFactory.getCurrentSession()
-                .createQuery("from Order o where o.user.id = :userId order by o.orderDate desc", Order.class)
+                .createQuery("from OrderEntity o where o.user.id = :userId order by o.orderDate desc", Order.class)
                 .setParameter("userId", userId)
                 .list();
     }
@@ -31,5 +31,13 @@ public class OrderDao {
     @Transactional
     public Order getOrderById(int orderId) {
         return this.sessionFactory.getCurrentSession().get(Order.class, orderId);
+    }
+
+    @Transactional
+    public void deleteOrder(int orderId) {
+        Order order = getOrderById(orderId);
+        if (order != null) {
+            this.sessionFactory.getCurrentSession().delete(order);
+        }
     }
 }

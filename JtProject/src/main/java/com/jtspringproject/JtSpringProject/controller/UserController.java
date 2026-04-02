@@ -40,6 +40,28 @@ public class UserController {
 		this.cartProductDao = cartProductDao;
 	}
 
+	@ModelAttribute("cartCount")
+	public int getCartCount() {
+		String username = "";
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+			username = auth.getName();
+		}
+
+		if (username.isEmpty()) return 0;
+
+		User user = userService.getUserByUsername(username);
+		if (user == null) return 0;
+
+		List<Cart> existingCarts = cartService.getCartByUserId(user.getId());
+		if (existingCarts.isEmpty()) return 0;
+
+		Cart userCart = existingCarts.get(0);
+		List<CartProduct> cartProducts = cartProductDao.getCartProductsByCartId(userCart.getId());
+		
+		return cartProducts.stream().mapToInt(CartProduct::getQuantity).sum();
+	}
+
 	@GetMapping("/register")
 	@io.swagger.v3.oas.annotations.Operation(summary = "Registration Page", description = "Loads the user registration view")
 	public String registerUser() {
@@ -57,17 +79,18 @@ public class UserController {
 
 		User user = userService.getUserByUsername(username);
 		if (user != null) {
-			List<Product> cartProducts = cartService.getProductsInCart(user);
+			List<CartProduct> cartProducts = cartService.getCartProductsInCart(user);
 			mv.addObject("cartProducts", cartProducts);
+			mv.addObject("userid", user.getId());
 
-			int total = cartProducts.stream().mapToInt(Product::getPrice).sum();
+			int total = cartProducts.stream().mapToInt(cp -> cp.getProduct().getPrice() * cp.getQuantity()).sum();
 			mv.addObject("total", total);
 		}
 		return mv;
 	}
 
 	@GetMapping("/user/addtocart")
-	public String addtocart(@RequestParam("pid") int productId) {
+	public String addtocart(@RequestParam("pid") int productId, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
@@ -89,12 +112,79 @@ public class UserController {
 				userCart = existingCarts.get(0);
 			}
 
-			CartProduct cartProduct = new CartProduct(userCart, product);
-			cartProductDao.addCartProduct(cartProduct);
-			log.info("Product {} added to cart for user {}", product.getName(), username);
+			// Check if product is already in cart
+			CartProduct cartProduct = cartProductDao.getCartProductByCartIdAndProductId(userCart.getId(), product.getId());
+			
+			if (cartProduct != null) {
+				// Increase quantity if product already exists in cart
+				cartProduct.setQuantity(cartProduct.getQuantity() + 1);
+				cartProductDao.updateCartProduct(cartProduct);
+				log.info("Product {} quantity increased for user {}", product.getName(), username);
+				redirectAttributes.addFlashAttribute("msg", product.getName() + " quantity updated in cart!");
+			} else {
+				// Add as new entry if it doesn't exist
+				cartProduct = new CartProduct(userCart, product);
+				cartProductDao.addCartProduct(cartProduct);
+				log.info("Product {} added to cart for user {}", product.getName(), username);
+				redirectAttributes.addFlashAttribute("msg", product.getName() + " added to cart successfully!");
+			}
 		}
 
 		return "redirect:/user/products";
+	}
+
+	@GetMapping("/user/cart/increase")
+	public String increaseQuantity(@RequestParam("pid") int productId) {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			List<Cart> carts = cartService.getCartByUserId(user.getId());
+			if (!carts.isEmpty()) {
+				CartProduct cp = cartProductDao.getCartProductByCartIdAndProductId(carts.get(0).getId(), productId);
+				if (cp != null) {
+					cp.setQuantity(cp.getQuantity() + 1);
+					cartProductDao.updateCartProduct(cp);
+				}
+			}
+		}
+		return "redirect:/buy";
+	}
+
+	@GetMapping("/user/cart/decrease")
+	public String decreaseQuantity(@RequestParam("pid") int productId) {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			List<Cart> carts = cartService.getCartByUserId(user.getId());
+			if (!carts.isEmpty()) {
+				CartProduct cp = cartProductDao.getCartProductByCartIdAndProductId(carts.get(0).getId(), productId);
+				if (cp != null) {
+					if (cp.getQuantity() > 1) {
+						cp.setQuantity(cp.getQuantity() - 1);
+						cartProductDao.updateCartProduct(cp);
+					} else {
+						cartProductDao.deleteCartProduct(cp);
+					}
+				}
+			}
+		}
+		return "redirect:/buy";
+	}
+
+	@GetMapping("/removeFromCart")
+	public String removeFromCart(@RequestParam("pid") int productId) {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userService.getUserByUsername(username);
+		if (user != null) {
+			List<Cart> carts = cartService.getCartByUserId(user.getId());
+			if (!carts.isEmpty()) {
+				CartProduct cp = cartProductDao.getCartProductByCartIdAndProductId(carts.get(0).getId(), productId);
+				if (cp != null) {
+					cartProductDao.deleteCartProduct(cp);
+				}
+			}
+		}
+		return "redirect:/buy";
 	}
 
 	@GetMapping("/login")

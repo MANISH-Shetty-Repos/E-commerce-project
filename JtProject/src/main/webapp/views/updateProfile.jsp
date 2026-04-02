@@ -30,7 +30,7 @@
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/user/products">Products</a></li>
-                <li><a href="/buy">Cart 🛒</a></li>
+                <li><a href="/buy">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                 <li><a href="/user/orders">My Orders</a></li>
                 <li><a href="/user/profile" style="color: var(--primary); font-weight: 600;">👤 Profile</a></li>
                 <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>

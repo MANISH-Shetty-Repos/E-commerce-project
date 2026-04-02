@@ -2,7 +2,7 @@ package com.jtspringproject.JtSpringProject.models;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "OrderItemEntity")
 @Table(name = "ORDER_ITEMS")
 public class OrderItem {
 
@@ -14,7 +14,7 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 

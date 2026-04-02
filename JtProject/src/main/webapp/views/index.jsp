@@ -23,7 +23,7 @@
                 <li><a href="/user/products">Products</a></li>
                 <c:choose>
                     <c:when test="${not empty username}">
-                        <li><a href="/buy">Cart 🛒</a></li>
+                        <li><a href="/buy">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                         <li><a href="/user/orders">My Orders</a></li>
                         <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
                         <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
@@ -43,6 +43,9 @@
     <!-- ===== HERO SECTION ===== -->
     <section class="hero">
         <div class="hero-content">
+            <c:if test="${not empty msg}">
+                <div class="alert alert-success" style="display: inline-block; margin-bottom: 24px;">${msg}</div>
+            </c:if>
             <h1 class="hero-title">Premium Shopping,<br><span class="gradient-text">Delivered to You.</span></h1>
             <p class="hero-subtitle">Explore our curated collection of top products at unbeatable prices.</p>
             <c:if test="${empty username}">

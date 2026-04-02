@@ -67,7 +67,7 @@
                 <li><a href="/user/products" style="color: var(--primary); font-weight: 600;">Products</a></li>
                 <c:choose>
                     <c:when test="${not empty username}">
-                        <li><a href="/buy">Cart 🛒</a></li>
+                        <li><a href="/buy">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                         <li><a href="/user/orders">My Orders</a></li>
                         <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
                         <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
@@ -84,6 +84,9 @@
 
     <!-- ===== PAGE HEADER ===== -->
     <div class="page-header">
+        <c:if test="${not empty msg}">
+            <div class="alert alert-success" style="display: inline-block; margin: 0 auto 24px; max-width: 600px; text-align: center;">${msg}</div>
+        </c:if>
         <h1>All Products</h1>
         <p>Find everything you need in one place</p>
     </div>
