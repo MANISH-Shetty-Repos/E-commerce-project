@@ -32,7 +32,7 @@ public class SecurityConfiguration {
         http
                 .antMatcher("/admin/**")
                 .authorizeRequests()
-                .antMatchers("/admin/login").permitAll()
+                .antMatchers("/admin/login", "/admin/products/bulk").permitAll()
                 .anyRequest().hasRole("ADMIN")
                 .and()
                 .formLogin()

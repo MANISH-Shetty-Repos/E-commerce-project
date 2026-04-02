@@ -137,7 +137,7 @@ public class UserController {
 	@GetMapping("/user/products")
 	public ModelAndView getproduct(
 			@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "6") int size) {
+			@RequestParam(defaultValue = "24") int size) {
 
 		ModelAndView mView = new ModelAndView("uproduct");
 		String username = "";

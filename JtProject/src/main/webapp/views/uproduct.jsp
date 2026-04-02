@@ -135,6 +135,21 @@
                 </div>
             </c:if>
         </div>
+
+        <!-- ===== PAGINATION ===== -->
+        <c:if test="${totalPages > 1}">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 48px;">
+                <c:if test="${currentPage > 1}">
+                    <a href="/user/products?page=${currentPage - 1}" class="btn btn-secondary btn-sm">← Previous</a>
+                </c:if>
+                
+                <span class="product-count">Page ${currentPage} of ${totalPages}</span>
+                
+                <c:if test="${currentPage < totalPages}">
+                    <a href="/user/products?page=${currentPage + 1}" class="btn btn-secondary btn-sm">Next →</a>
+                </c:if>
+            </div>
+        </c:if>
     </section>
 
     <!-- ===== FOOTER ===== -->

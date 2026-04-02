@@ -1,6 +1,7 @@
 package com.jtspringproject.JtSpringProject.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,9 +12,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.jtspringproject.JtSpringProject.models.Category;
@@ -116,7 +119,7 @@ public class AdminController {
 	@io.swagger.v3.oas.annotations.Operation(summary = "Get All Products", description = "Retrieve a paginated list of all products")
 	public ModelAndView getproduct(
 			@RequestParam(defaultValue = "1") int page, 
-			@RequestParam(defaultValue = "10") int size) {
+			@RequestParam(defaultValue = "24") int size) {
 		ModelAndView mView = new ModelAndView("products");
 
 		List<Product> products = this.productService.getProductsPaginated(page, size, "asc");
@@ -155,6 +158,37 @@ public class AdminController {
 		product.setQuantity(quantity);
 		this.productService.addProduct(product);
 		return "redirect:/admin/products";
+	}
+
+	@PostMapping("products/bulk")
+	@ResponseBody
+	@io.swagger.v3.oas.annotations.Operation(summary = "Bulk Add Products", description = "Adds multiple products at once via JSON list")
+	public String addProductsBulk(@RequestBody List<Map<String, Object>> productsJson) {
+		log.info("Bulk adding {} products", productsJson.size());
+		int count = 0;
+		for (Map<String, Object> item : productsJson) {
+			try {
+				Product product = new Product();
+				product.setName((String) item.get("name"));
+				product.setPrice((Integer) item.get("price"));
+				product.setQuantity((Integer) item.get("quantity"));
+				product.setDescription((String) item.get("description"));
+				product.setImage((String) item.get("productImage"));
+                // Weight is not in the user's JSON, setting to 0
+				product.setWeight(0);
+
+				int catId = (Integer) item.get("categoryId");
+				Category category = this.categoryService.getCategory(catId);
+				if (category != null) {
+					product.setCategory(category);
+					this.productService.addProduct(product);
+					count++;
+				}
+			} catch (Exception e) {
+				log.error("Error adding product {}: {}", item.get("name"), e.getMessage());
+			}
+		}
+		return "Successfully added " + count + " products.";
 	}
 
 	@GetMapping("products/update/{id}")
