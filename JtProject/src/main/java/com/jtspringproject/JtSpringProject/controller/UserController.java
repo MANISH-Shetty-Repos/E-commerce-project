@@ -95,9 +95,6 @@ public class UserController {
 
 	@GetMapping("/user/addtocart")
 	public String addtocart(@RequestParam("pid") int productId, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-		if (isAdmin()) {
-			return "redirect:/admin/index";
-		}
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
@@ -247,9 +244,6 @@ public class UserController {
 	public ModelAndView getproduct(
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "24") int size) {
-		if (isAdmin()) {
-			return new ModelAndView("redirect:/admin/index");
-		}
 		
 		ModelAndView mView = new ModelAndView("uproduct");
 		String username = "";
@@ -320,14 +314,6 @@ public class UserController {
 		}
 	}
 
-	private boolean isAdmin() {
-		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
-			User user = userService.getUserByUsername(auth.getName());
-			return user != null && "ROLE_ADMIN".equals(user.getRole());
-		}
-		return false;
-	}
 
 	@GetMapping("/user/profile")
 	public String userProfile(Model model) {

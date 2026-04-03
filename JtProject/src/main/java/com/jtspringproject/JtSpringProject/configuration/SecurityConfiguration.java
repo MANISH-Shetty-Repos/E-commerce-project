@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,11 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @EnableWebSecurity
 @Slf4j
 public class SecurityConfiguration {
-
     private final userService userService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public SecurityConfiguration(userService userService) {
+    public SecurityConfiguration(userService userService, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Chain 1: Admin Area
@@ -31,6 +31,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
                 .antMatcher("/admin/**")
+                .securityContext()
+                    .securityContextRepository(adminSecurityContextRepository())
+                .and()
+                .authenticationProvider(adminAuthenticationProvider())
                 .authorizeRequests()
                 .antMatchers("/admin/login", "/admin/products/bulk").permitAll()
                 .anyRequest().hasRole("ADMIN")
@@ -56,6 +60,10 @@ public class SecurityConfiguration {
     @Order(2)
     public SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityContext()
+                    .securityContextRepository(userSecurityContextRepository())
+                .and()
+                .authenticationProvider(userAuthenticationProvider())
                 .authorizeRequests()
                 // Public paths
                 .antMatchers("/", "/user/products", "/login", "/register", "/newuserregister", "/test", "/test2").permitAll()
@@ -63,7 +71,7 @@ public class SecurityConfiguration {
                 .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico")
                 .permitAll()
                 // Protected paths
-                .anyRequest().hasAnyRole("USER", "ADMIN")
+                .anyRequest().hasRole("USER")
                 .and()
                 .formLogin()
                 .loginPage("/login")
@@ -82,27 +90,54 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            log.info("Attempting authentication for user: {}", username);
+    public org.springframework.security.web.context.SecurityContextRepository adminSecurityContextRepository() {
+        org.springframework.security.web.context.HttpSessionSecurityContextRepository repo = new org.springframework.security.web.context.HttpSessionSecurityContextRepository();
+        repo.setSpringSecurityContextKey("ADMIN_SECURITY_CONTEXT");
+        return repo;
+    }
+
+    @Bean
+    public org.springframework.security.web.context.SecurityContextRepository userSecurityContextRepository() {
+        org.springframework.security.web.context.HttpSessionSecurityContextRepository repo = new org.springframework.security.web.context.HttpSessionSecurityContextRepository();
+        repo.setSpringSecurityContextKey("USER_SECURITY_CONTEXT");
+        return repo;
+    }
+
+    @Bean
+    public org.springframework.security.authentication.dao.DaoAuthenticationProvider adminAuthenticationProvider() {
+        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(username -> {
             User user = userService.getUserByUsername(username);
-
-            if (user == null) {
-                log.warn("Authentication failed: User not found: {}", username);
-                throw new UsernameNotFoundException("User not found: " + username);
+            if (user == null || !"ROLE_ADMIN".equals(user.getRole())) {
+                log.warn("Admin login attempt failed for user: {}", username);
+                throw new UsernameNotFoundException("Admin not found: " + username);
             }
-
-            // Map DB Roles to Spring Security Roles
-            String securityRole = "ROLE_ADMIN".equals(user.getRole()) ? "ADMIN" : "USER";
-
-            log.info("Authentication successful for [{}]. Security role assigned: [{}]", user.getUsername(),
-                    securityRole);
-
             return org.springframework.security.core.userdetails.User
                     .withUsername(user.getUsername())
                     .password(user.getPassword())
-                    .roles(securityRole)
+                    .roles("ADMIN")
                     .build();
-        };
+        });
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
+    }
+
+    @Bean
+    public org.springframework.security.authentication.dao.DaoAuthenticationProvider userAuthenticationProvider() {
+        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(username -> {
+            User user = userService.getUserByUsername(username);
+            if (user == null || "ROLE_ADMIN".equals(user.getRole())) {
+                log.warn("User login attempt failed for user (or Admin tried user login): {}", username);
+                throw new UsernameNotFoundException("User not found: " + username);
+            }
+            return org.springframework.security.core.userdetails.User
+                    .withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .roles("USER")
+                    .build();
+        });
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
     }
 }
