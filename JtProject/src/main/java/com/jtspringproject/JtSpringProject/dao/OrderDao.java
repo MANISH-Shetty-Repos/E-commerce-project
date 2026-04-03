@@ -40,4 +40,13 @@ public class OrderDao {
             this.sessionFactory.getCurrentSession().delete(order);
         }
     }
+
+    @Transactional
+    public long getOrderCountByProductId(int productId) {
+        Long count = (Long) this.sessionFactory.getCurrentSession()
+                .createQuery("select coalesce(sum(oi.quantity), 0L) from OrderItemEntity oi where oi.product.id = :productId")
+                .setParameter("productId", productId)
+                .uniqueResult();
+        return count == null ? 0L : count;
+    }
 }

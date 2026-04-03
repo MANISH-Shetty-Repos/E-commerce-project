@@ -21,6 +21,8 @@ import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 
+import com.jtspringproject.JtSpringProject.services.OrderService;
+
 @Controller
 @Slf4j
 @io.swagger.v3.oas.annotations.tags.Tag(name = "User Controller", description = "Customer-facing APIs")
@@ -30,14 +32,16 @@ public class UserController {
 	private final productService productService;
 	private final cartService cartService;
 	private final cartProductDao cartProductDao;
+	private final OrderService orderService;
 
 	@Autowired
 	public UserController(userService userService, productService productService, cartService cartService,
-			cartProductDao cartProductDao) {
+			cartProductDao cartProductDao, OrderService orderService) {
 		this.userService = userService;
 		this.productService = productService;
 		this.cartService = cartService;
 		this.cartProductDao = cartProductDao;
+		this.orderService = orderService;
 	}
 
 	@ModelAttribute("cartCount")
@@ -91,6 +95,9 @@ public class UserController {
 
 	@GetMapping("/user/addtocart")
 	public String addtocart(@RequestParam("pid") int productId, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		if (isAdmin()) {
+			return "redirect:/admin/index";
+		}
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
@@ -104,12 +111,19 @@ public class UserController {
 			List<Cart> existingCarts = cartService.getCartByUserId(user.getId());
 			Cart userCart;
 
-			if (existingCarts.isEmpty()) {
-				userCart = new Cart();
-				userCart.setCustomer(user);
-				userCart = cartService.addCart(userCart);
-			} else {
-				userCart = existingCarts.get(0);
+			try {
+				if (existingCarts.isEmpty()) {
+					log.info("Creating new cart for user {}", username);
+					userCart = new Cart();
+					userCart.setCustomer(user);
+					userCart = cartService.addCart(userCart);
+				} else {
+					userCart = existingCarts.get(0);
+				}
+			} catch (Exception e) {
+				log.error("Failed to create/fetch cart for user {}: {}", username, e.getMessage());
+				redirectAttributes.addFlashAttribute("error", "System Error: Your cart could not be initialized. Please contact support.");
+				return "redirect:/";
 			}
 
 			// Check if product is already in cart
@@ -217,6 +231,11 @@ public class UserController {
 		if (products.isEmpty()) {
 			mView.addObject("msg", "No products are available");
 		} else {
+			java.util.Map<Integer, Long> orderCounts = new java.util.HashMap<>();
+			for (Product p : products) {
+				orderCounts.put(p.getId(), orderService.getOrderCountByProductId(p.getId()));
+			}
+			mView.addObject("orderCounts", orderCounts);
 			mView.addObject("products", products);
 			mView.addObject("currentPage", page);
 			mView.addObject("totalPages", totalPages);
@@ -228,7 +247,10 @@ public class UserController {
 	public ModelAndView getproduct(
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "24") int size) {
-
+		if (isAdmin()) {
+			return new ModelAndView("redirect:/admin/index");
+		}
+		
 		ModelAndView mView = new ModelAndView("uproduct");
 		String username = "";
 		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -244,6 +266,11 @@ public class UserController {
 		if (products.isEmpty()) {
 			mView.addObject("msg", "No products are available");
 		} else {
+			java.util.Map<Integer, Long> orderCounts = new java.util.HashMap<>();
+			for (Product p : products) {
+				orderCounts.put(p.getId(), orderService.getOrderCountByProductId(p.getId()));
+			}
+			mView.addObject("orderCounts", orderCounts);
 			mView.addObject("products", products);
 			mView.addObject("currentPage", page);
 			mView.addObject("totalPages", totalPages);
@@ -291,6 +318,15 @@ public class UserController {
 			mView.addObject("msg", userDto.getUsername() + " is taken. Please choose a different username.");
 			return mView;
 		}
+	}
+
+	private boolean isAdmin() {
+		org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+			User user = userService.getUserByUsername(auth.getName());
+			return user != null && "ROLE_ADMIN".equals(user.getRole());
+		}
+		return false;
 	}
 
 	@GetMapping("/user/profile")

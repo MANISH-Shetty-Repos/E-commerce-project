@@ -24,8 +24,6 @@ public class OrderService {
         Order newOrder = new Order();
         newOrder.setUser(user);
         newOrder.setOrderDate(new Date());
-        
-        // This is the old generic method, but we should use the itemized one
         return orderDao.saveOrder(newOrder);
     }
 
@@ -74,5 +72,10 @@ public class OrderService {
     @Transactional
     public void deleteOrder(int orderId) {
         orderDao.deleteOrder(orderId);
+    }
+
+    @Transactional
+    public long getOrderCountByProductId(int productId) {
+        return orderDao.getOrderCountByProductId(productId);
     }
 }

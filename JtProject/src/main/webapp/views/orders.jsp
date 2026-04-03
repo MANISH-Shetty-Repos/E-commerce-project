@@ -26,6 +26,11 @@
         .orders-container { max-width: 900px; margin: 48px auto; padding: 0 24px; }
         .orders-title { font-size: 2rem; font-weight: 800; color: var(--text-main); margin-bottom: 32px; letter-spacing: -0.025em; }
 
+        /* Alert styles */
+        .msg-alert { padding: 16px; border-radius: var(--radius); margin-bottom: 24px; font-weight: 600; display:flex; justify-content: space-between; align-items:center; }
+        .msg-error { background: #fef2f2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .msg-success { background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
+
         .order-card {
             background: white; border-radius: var(--radius); border: 1px solid var(--border);
             margin-bottom: 24px; overflow: hidden; transition: all 0.3s ease;
@@ -108,7 +113,8 @@
     <div class="orders-container">
         <!-- Alerts -->
         <c:if test="${not empty msg}">
-            <div id="flash-msg" style="padding: 16px; border-radius: var(--radius); margin-bottom: 24px; font-weight: 600; animation: slideIn 0.3s ease; display:flex; justify-content: space-between; align-items:center; background: ${msg.contains('cancle') || msg.contains('refund') ? '#fef2f2' : '#ecfdf5'}; color: ${msg.contains('cancle') || msg.contains('refund') ? '#991b1b' : '#065f46'}; border-left: 4px solid ${msg.contains('cancle') || msg.contains('refund') ? '#ef4444' : '#10b981'};">
+            <c:set var="isError" value="${msg.toLowerCase().contains('cancel') || msg.toLowerCase().contains('refund') || msg.toLowerCase().contains('error')}" />
+            <div id="flash-msg" class="msg-alert ${isError ? 'msg-error' : 'msg-success'}">
                 <span>${msg}</span>
                 <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem;">&times;</button>
             </div>
@@ -120,7 +126,7 @@
             <c:when test="${not empty orders}">
                 <c:forEach var="order" items="${orders}">
                     <div class="order-card" id="card-${order.id}">
-                        <div class="order-header" onclick="toggleOrder(${order.id})">
+                        <div class="order-header" onclick="toggleOrder('${order.id}')">
                             <div style="display: flex; align-items: center; gap: 20px;">
                                 <div style="font-size: 1.5rem; background: var(--primary-light); padding: 12px; border-radius: 12px;">🚚</div>
                                 <div>
@@ -190,7 +196,7 @@
                                         <div style="display: flex; align-items: center; gap: 16px;">
                                             <c:choose>
                                                 <c:when test="${not empty item.product}">
-                                                    <img src="${item.product.image}" class="mini-img" onerror="this.src='https://placehold.co/48x48/e2e8f0/94a3b8?text=?'">
+                                                    <img src="${item.product.image}" class="mini-img" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2QyZDhlMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNjQ3NDhiIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPj88L3RleHQ+PC9zdmc+';">
                                                     <div>
                                                         <div style="font-weight: 600; font-size: 0.95rem;">${item.product.name}</div>
                                                         <div style="font-size: 0.75rem; color: var(--text-muted);">Quantity: ${item.quantity}</div>
@@ -208,7 +214,7 @@
                             </div>
 
                             <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: white;">
-                                <button class="btn-cancel" onclick="showCancelModal(${order.id})">Cancel This Order</button>
+                                <button class="btn-cancel" onclick="showCancelModal('${order.id}')">Cancel This Order</button>
                             </div>
                         </div>
                     </div>
