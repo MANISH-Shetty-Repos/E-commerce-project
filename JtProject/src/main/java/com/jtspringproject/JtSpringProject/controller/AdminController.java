@@ -20,8 +20,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.jtspringproject.JtSpringProject.models.Category;
+import com.jtspringproject.JtSpringProject.models.Order;
 import com.jtspringproject.JtSpringProject.models.Product;
 import com.jtspringproject.JtSpringProject.models.User;
+import com.jtspringproject.JtSpringProject.services.OrderService;
 import com.jtspringproject.JtSpringProject.services.categoryService;
 import com.jtspringproject.JtSpringProject.services.productService;
 import com.jtspringproject.JtSpringProject.services.userService;
@@ -38,12 +40,14 @@ public class AdminController {
 	private final userService userService;
 	private final categoryService categoryService;
 	private final productService productService;
+	private final OrderService orderService;
 
 	@Autowired
-	public AdminController(userService userService, categoryService categoryService, productService productService) {
+	public AdminController(userService userService, categoryService categoryService, productService productService, OrderService orderService) {
 		this.userService = userService;
 		this.categoryService = categoryService;
 		this.productService = productService;
+		this.orderService = orderService;
 	}
 	
 	@GetMapping("/index")
@@ -67,14 +71,36 @@ public class AdminController {
 	}
 	
 	@GetMapping( value={"/","Dashboard"})
-	@io.swagger.v3.oas.annotations.Operation(summary = "Admin Home Dashboard", description = "Display the main admin control panel")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Admin Home Dashboard", description = "Display the main admin control panel with interactive analytics")
 	public ModelAndView adminHome() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	    ModelAndView mv = new ModelAndView("adminHome");
+		
 		if (auth != null) {
 			mv.addObject("admin", auth.getName());
 		}
-	    return mv;
+
+		// Fetch stats and lists for the dashboard
+		List<Product> products = productService.getProducts();
+		List<Category> categories = categoryService.getCategories();
+		List<User> users = userService.getUsers();
+		List<Order> orders = orderService.getAllOrders();
+
+		mv.addObject("products", products);
+		mv.addObject("categories", categories);
+		mv.addObject("users", users);
+		mv.addObject("orders", orders);
+
+		mv.addObject("productCount", products.size());
+		mv.addObject("categoryCount", categories.size());
+		mv.addObject("userCount", users.stream().filter(u -> !"ROLE_ADMIN".equals(u.getRole())).count());
+		mv.addObject("orderCount", orders.size());
+
+		// Calculate total revenue
+		long totalRevenue = orders.stream().mapToLong(Order::getTotalAmount).sum();
+		mv.addObject("totalRevenue", totalRevenue);
+
+		return mv;
 	}
 	
 	@GetMapping("categories")
@@ -204,8 +230,20 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "products/update/{id}",method=RequestMethod.POST)
-	public String updateProduct()
+	public String updateProduct(@PathVariable("id") int id, @RequestParam("name") String name, @RequestParam("categoryid") int categoryId, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String productImage)
 	{
+		Category category = this.categoryService.getCategory(categoryId);
+		Product product = this.productService.getProduct(id);
+		if (product != null) {
+			product.setName(name);
+			product.setCategory(category);
+			product.setDescription(description);
+			product.setPrice(price);
+			product.setImage(productImage);
+			product.setWeight(weight);
+			product.setQuantity(quantity);
+			this.productService.updateProduct(id, product);
+		}
 		return "redirect:/admin/products";
 	}
 	
@@ -255,9 +293,57 @@ public class AdminController {
 			model.addAttribute("username", user.getUsername());
 			model.addAttribute("email", user.getEmail());
 			model.addAttribute("address", user.getAddress());
+            model.addAttribute("admin", user.getUsername()); // For sidebar consistency
 		}
 
-		return "updateProfile";
+		return "adminProfile";
+	}
+
+	@GetMapping("profile/edit")
+	public String profileEditForm(Model model) {
+		String username = "";
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			username = auth.getName();
+		}
+		User user = userService.getUserByUsername(username);
+		
+		if (user != null) {
+			model.addAttribute("userid", user.getId());
+			model.addAttribute("username", user.getUsername());
+			model.addAttribute("email", user.getEmail());
+			model.addAttribute("address", user.getAddress());
+            model.addAttribute("admin", user.getUsername()); 
+		}
+
+		return "adminProfileUpdate";
+	}
+
+	@PostMapping("profile/update")
+	public String updateAdminProfile(@RequestParam("userid") int userid, @RequestParam("username") String username,
+			@RequestParam("email") String email, @RequestParam("password") String password,
+			@RequestParam("address") String address, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+		User user = userService.getUserById(userid);
+		if (user != null) {
+			user.setUsername(username);
+			user.setEmail(email);
+			user.setAddress(address);
+
+			userService.updateExistingUser(user, (password != null && !password.isEmpty()) ? password : null);
+
+			// Update security context if username changed
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
+					username,
+					user.getPassword(),
+					auth.getAuthorities());
+
+			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+			redirectAttributes.addFlashAttribute("msg", "Admin profile updated successfully!");
+		} else {
+			redirectAttributes.addFlashAttribute("error", "Profile update failed. User not found.");
+		}
+		return "redirect:/admin/profileDisplay";
 	}
 	
 	@RequestMapping(value = "updateuser", method = RequestMethod.POST)
@@ -283,6 +369,15 @@ public class AdminController {
 			redirectAttributes.addFlashAttribute("msg", "Profile update failed. User not found.");
 		}
 		return "redirect:/user/profile";
+	}
+
+	@GetMapping("orders")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get All Orders", description = "List all customer orders with transaction details")
+	public ModelAndView getOrders() {
+		ModelAndView mView = new ModelAndView("orders");
+		List<Order> orders = this.orderService.getAllOrders();
+		mView.addObject("orders", orders);
+		return mView;
 	}
 
 }

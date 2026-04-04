@@ -78,4 +78,9 @@ public class OrderService {
     public long getOrderCountByProductId(int productId) {
         return orderDao.getOrderCountByProductId(productId);
     }
+
+    @Transactional
+    public List<Order> getAllOrders() {
+        return orderDao.getAllOrders();
+    }
 }

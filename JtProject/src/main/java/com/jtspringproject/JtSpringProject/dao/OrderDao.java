@@ -29,6 +29,13 @@ public class OrderDao {
     }
 
     @Transactional
+    public List<Order> getAllOrders() {
+        return this.sessionFactory.getCurrentSession()
+                .createQuery("from OrderEntity o order by o.orderDate desc", Order.class)
+                .list();
+    }
+
+    @Transactional
     public Order getOrderById(int orderId) {
         return this.sessionFactory.getCurrentSession().get(Order.class, orderId);
     }
