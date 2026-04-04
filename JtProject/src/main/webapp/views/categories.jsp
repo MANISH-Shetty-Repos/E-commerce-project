@@ -16,33 +16,34 @@
         <!-- SIDEBAR -->
         <aside class="admin-sidebar">
             <div class="sidebar-brand">
-                <a href="/admin/Dashboard">🛍️ E-Store</a>
-                <small>Admin Panel</small>
+                <a href="/admin/Dashboard">E-Store</a>
+                <small>Merchant Command Center</small>
             </div>
             <div class="sidebar-section">Main</div>
             <ul class="sidebar-nav">
-                <li><a href="/admin/Dashboard"><span class="nav-icon">📊</span> Dashboard</a></li>
+                <li><a href="/admin/Dashboard">Dashboard</a></li>
             </ul>
             <div class="sidebar-section">Catalog</div>
             <ul class="sidebar-nav">
-                <li><a href="/admin/categories" class="active"><span class="nav-icon">📁</span> Categories</a></li>
-                <li><a href="/admin/products"><span class="nav-icon">📦</span> Products</a></li>
-                <li><a href="/admin/products/add"><span class="nav-icon">➕</span> Add Product</a></li>
+                <li><a href="/admin/categories" class="active">Category</a></li>
+                <li><a href="/admin/products">Product</a></li>
+                <li><a href="/admin/customers">Customers</a></li>
+                <li><a href="/admin/orders">Orders</a></li>
             </ul>
-            <div class="sidebar-section">Users</div>
+            <div class="sidebar-section">System</div>
             <ul class="sidebar-nav">
-                <li><a href="/admin/customers"><span class="nav-icon">👥</span> Customers</a></li>
-            </ul>
-            <div class="sidebar-section">Account</div>
-            <ul class="sidebar-nav">
-                <li><a href="/admin/logout"><span class="nav-icon">🚪</span> Logout</a></li>
+                <li><a href="/admin/profileDisplay">Admin Profile</a></li>
+                <li><a href="/admin/logout" style="color: #f87171;">Logout</a></li>
             </ul>
         </aside>
 
         <!-- MAIN CONTENT -->
         <main class="admin-main">
             <div class="admin-topbar">
-                <h1>📁 Categories</h1>
+                <div class="topbar-left">
+                    <h1 style="margin: 0;">Categories</h1>
+                    <p style="color: #64748b; margin: 4px 0 0;">Create and organize your product types.</p>
+                </div>
             </div>
 
             <!-- ADD CATEGORY FORM -->
@@ -62,27 +63,28 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th style="width: 80px;">S.No</th>
                             <th>Category Name</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach var="category" items="${categories}">
+                        <c:forEach var="category" items="${categories}" varStatus="loop">
                             <tr>
-                                <td style="font-weight: 600; color: var(--text-muted);">#${category.id}</td>
+                                <td style="font-weight: 600; color: var(--text-muted);">${loop.count}</td>
                                 <td>
                                     <form action="/admin/categories/update" method="get"
                                           style="display: flex; gap: 8px; align-items: center;" id="updateForm${category.id}">
                                         <input type="hidden" name="categoryid" value="${category.id}">
                                         <input type="text" name="categoryname" value="${category.name}"
-                                               style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.9rem; width: 200px;">
-                                        <button type="submit" class="btn-edit">Update</button>
+                                               style="padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; flex: 1; max-width: 300px;">
+                                        <button type="submit" class="btn-edit" style="padding: 10px 20px;">Update</button>
                                     </form>
                                 </td>
                                 <td>
                                     <a href="/admin/categories/delete?id=${category.id}" class="btn-delete"
-                                       onclick="return confirm('Delete this category?')">Delete</a>
+                                       onclick="return confirm('Delete this category? This might affect products in it.')"
+                                       style="padding: 10px 20px;">Delete</a>
                                 </td>
                             </tr>
                         </c:forEach>
