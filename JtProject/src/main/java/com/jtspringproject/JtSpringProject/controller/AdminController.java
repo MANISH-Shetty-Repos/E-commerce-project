@@ -113,29 +113,28 @@ public class AdminController {
 	}
 	
 	@PostMapping("/categories")
-	public String addCategory(@RequestParam("categoryname") String category_name)
+	public String addCategory(@RequestParam("categoryname") String category_name, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes)
 	{
 		log.info("Adding category: {}", category_name);
 		
-		Category category =  this.categoryService.addCategory(category_name);
-		if(category.getName().equals(category_name)) {
-			return "redirect:categories";
-		}else {
-			return "redirect:categories";
-		}
+		this.categoryService.addCategory(category_name);
+		redirectAttributes.addFlashAttribute("successMsg", "Category '" + category_name + "' added successfully!");
+		return "redirect:categories";
 	}
 	
 	@GetMapping("categories/delete")
-	public String removeCategoryDb(@RequestParam("id") int id)
+	public String removeCategoryDb(@RequestParam("id") int id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes)
 	{	
 			this.categoryService.deleteCategory(id);
+			redirectAttributes.addFlashAttribute("successMsg", "Category deleted successfully!");
 			return "redirect:/admin/categories";
 	}
 	
 	@GetMapping("categories/update")
-	public String updateCategory(@RequestParam("categoryid") int id, @RequestParam("categoryname") String categoryname)
+	public String updateCategory(@RequestParam("categoryid") int id, @RequestParam("categoryname") String categoryname, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes)
 	{
 		this.categoryService.updateCategory(id, categoryname);
+		redirectAttributes.addFlashAttribute("successMsg", "Category updated successfully!");
 		return "redirect:/admin/categories";
 	}
 
@@ -158,6 +157,7 @@ public class AdminController {
 			mView.addObject("products", products);
 			mView.addObject("currentPage", page);
 			mView.addObject("totalPages", totalPages);
+			mView.addObject("pageSize", size);
 		}
 		return mView;
 	}
@@ -171,7 +171,7 @@ public class AdminController {
 	}
 
 	@RequestMapping(value = "products/add",method=RequestMethod.POST)
-	public String addProduct(@RequestParam("name") String name,@RequestParam("categoryid") int categoryId ,@RequestParam("price") int price,@RequestParam("weight") int weight, @RequestParam("quantity")int quantity,@RequestParam("description") String description,@RequestParam("productImage") String productImage) {
+	public String addProduct(@RequestParam("name") String name,@RequestParam("categoryid") int categoryId ,@RequestParam("price") int price,@RequestParam("weight") int weight, @RequestParam("quantity")int quantity,@RequestParam("description") String description,@RequestParam("productImage") String productImage, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 		log.info("Adding product to category ID: {}", categoryId);
 		Category category = this.categoryService.getCategory(categoryId);
 		Product product = new Product();
@@ -183,6 +183,7 @@ public class AdminController {
 		product.setWeight(weight);
 		product.setQuantity(quantity);
 		this.productService.addProduct(product);
+		redirectAttributes.addFlashAttribute("successMsg", "Product '" + name + "' added successfully!");
 		return "redirect:/admin/products";
 	}
 
@@ -230,7 +231,7 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "products/update/{id}",method=RequestMethod.POST)
-	public String updateProduct(@PathVariable("id") int id, @RequestParam("name") String name, @RequestParam("categoryid") int categoryId, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String productImage)
+	public String updateProduct(@PathVariable("id") int id, @RequestParam("name") String name, @RequestParam("categoryid") int categoryId, @RequestParam("price") int price, @RequestParam("weight") int weight, @RequestParam("quantity") int quantity, @RequestParam("description") String description, @RequestParam("productImage") String productImage, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes)
 	{
 		Category category = this.categoryService.getCategory(categoryId);
 		Product product = this.productService.getProduct(id);
@@ -243,14 +244,16 @@ public class AdminController {
 			product.setWeight(weight);
 			product.setQuantity(quantity);
 			this.productService.updateProduct(id, product);
+			redirectAttributes.addFlashAttribute("successMsg", "Product '" + name + "' updated successfully!");
 		}
 		return "redirect:/admin/products";
 	}
 	
 	@GetMapping("products/delete")
-	public String removeProduct(@RequestParam("id") int id)
+	public String removeProduct(@RequestParam("id") int id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes)
 	{
 		this.productService.deleteProduct(id);
+		redirectAttributes.addFlashAttribute("successMsg", "Product deleted successfully!");
 		return "redirect:/admin/products";
 	}
 	

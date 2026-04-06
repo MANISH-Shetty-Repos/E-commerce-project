@@ -46,6 +46,12 @@
                 </div>
             </div>
 
+            <c:if test="${not empty successMsg}">
+                <div class="alert alert-success" style="margin-bottom: 24px; padding: 16px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; border-radius: 8px; font-weight: 600;">
+                    ${successMsg}
+                </div>
+            </c:if>
+
             <!-- ADD CATEGORY FORM -->
             <div class="card" style="margin-bottom: 32px; max-width: 500px;">
                 <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 16px;">Add New Category</h3>
@@ -83,7 +89,6 @@
                                 </td>
                                 <td>
                                     <a href="/admin/categories/delete?id=${category.id}" class="btn-delete"
-                                       onclick="return confirm('Delete this category? This might affect products in it.')"
                                        style="padding: 10px 20px;">Delete</a>
                                 </td>
                             </tr>

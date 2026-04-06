@@ -49,6 +49,11 @@
                 </div>
             </div>
 
+            <c:if test="${not empty successMsg}">
+                <div class="alert alert-success" style="margin-bottom: 24px; padding: 16px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; border-radius: 8px; font-weight: 600;">
+                    ${successMsg}
+                </div>
+            </c:if>
             <c:if test="${not empty msg}">
                 <div class="alert alert-danger" style="margin-bottom: 24px;">${msg}</div>
             </c:if>
@@ -68,7 +73,7 @@
                     <tbody>
                         <c:forEach var="product" items="${products}" varStatus="loop">
                             <tr>
-                                <td style="font-weight: 600; color: #94a3b8; padding-left: 24px;">${loop.count}</td>
+                                <td style="font-weight: 600; color: #94a3b8; padding-left: 24px;">${(currentPage - 1) * pageSize + loop.count}</td>
                                 <td style="padding-left: 12px;">
                                     <div style="display: flex; align-items: center; gap: 16px;">
                                         <img src="${product.image}" alt="${product.name}"
@@ -104,7 +109,7 @@
                                     <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                         <a href="/admin/products/update/${product.id}" class="btn-edit" style="padding: 8px 16px;">Edit</a>
                                         <a href="/admin/products/delete?id=${product.id}" class="btn-delete"
-                                           onclick="return confirm('Delete ${product.name}?')" style="padding: 8px 16px;">Delete</a>
+                                           style="padding: 8px 16px;">Delete</a>
                                     </div>
                                 </td>
                             </tr>
