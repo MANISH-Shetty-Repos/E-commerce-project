@@ -57,13 +57,13 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">🛍️ E-Store</a>
+            <a href="/" class="nav-brand">E-Store</a>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/user/products">Products</a></li>
-                <li><a href="/buy" style="color: var(--primary); font-weight: 600;">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
+                <li><a href="/buy" style="color: var(--primary); font-weight: 600;">Cart <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                 <li><a href="/user/orders">My Orders</a></li>
-                <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
+                <li><a href="/user/profile" class="nav-profile">${username}</a></li>
                 <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
             </ul>
             <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
@@ -71,7 +71,7 @@
     </nav>
 
     <div class="cart-container">
-        <h1 class="cart-title">🛒 Shopping Cart</h1>
+        <h1 class="cart-title">Shopping Cart</h1>
 
         <c:choose>
             <c:when test="${not empty cartProducts}">
@@ -79,7 +79,7 @@
                 <!-- Success/Error Alerts -->
                 <c:if test="${not empty msg}">
                     <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #065f46; font-weight: 600;">
-                        ✅ ${msg}
+                        ${msg}
                     </div>
                 </c:if>
 
@@ -148,13 +148,13 @@
                 <!-- Payment Method Section -->
                 <div class="card" style="margin-top: 24px; padding: 24px;">
                     <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                        💳 Select Payment Method
+                        Select Payment Method
                     </h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                         <label style="display: block;">
                             <input type="radio" name="paymentMethod" value="UPI" style="display: none;" onchange="updateSelectedPayment(this)">
                             <div class="payment-option" style="padding: 16px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;">
-                                <div style="font-size: 1.5rem;">📱</div>
+                                <div style="font-size: 1.5rem; color:#94a3b8; font-weight:800;">UPI</div>
                                 <div>
                                     <div style="font-weight: 700;">UPI Payment</div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);">Gpay, PhonePe, Paytm</div>
@@ -164,7 +164,7 @@
                         <label style="display: block;">
                             <input type="radio" name="paymentMethod" value="Card" style="display: none;" onchange="updateSelectedPayment(this)">
                             <div class="payment-option" style="padding: 16px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;">
-                                <div style="font-size: 1.5rem;">💳</div>
+                                <div style="font-size: 1.5rem; color:#94a3b8; font-weight:800;">CRD</div>
                                 <div>
                                     <div style="font-weight: 700;">Credit/Debit Card</div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);">All major cards accepted</div>
@@ -174,7 +174,7 @@
                         <label style="display: block;">
                             <input type="radio" name="paymentMethod" value="Cash on Delivery" checked style="display: none;" onchange="updateSelectedPayment(this)">
                             <div class="payment-option selected-payment" style="padding: 16px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; border-color: var(--primary); background: #f0f9ff;">
-                                <div style="font-size: 1.5rem;">💵</div>
+                                <div style="font-size: 1.5rem; color:#94a3b8; font-weight:800;">COD</div>
                                 <div>
                                     <div style="font-weight: 700;">Cash on Delivery</div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);">Pay when you receive</div>
@@ -216,7 +216,7 @@
             </c:when>
             <c:otherwise>
                 <div class="card" style="text-align: center; padding: 80px 24px;">
-                    <div style="font-size: 4rem; margin-bottom: 16px;">🛒</div>
+                    <div style="font-size: 4rem; margin-bottom: 16px; color:#cbd5e1;">📋</div>
                     <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Your cart is empty</h3>
                     <p style="color: var(--text-muted); margin-bottom: 28px;">Browse our products and add items to get started.</p>
                     <a href="/user/products" class="btn btn-primary">Browse Products</a>

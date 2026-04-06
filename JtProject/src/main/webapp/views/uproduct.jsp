@@ -111,15 +111,15 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">🛍️ E-Store</a>
+            <a href="/" class="nav-brand">E-Store</a>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/user/products" style="color: var(--primary); font-weight: 700;">Products</a></li>
                 <c:choose>
                     <c:when test="${not empty username}">
-                        <li><a href="/buy">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
+                        <li><a href="/buy">Cart <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                         <li><a href="/user/orders">My Orders</a></li>
-                        <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
+                        <li><a href="/user/profile" class="nav-profile">${username}</a></li>
                         <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
                     </c:when>
                     <c:otherwise>
@@ -139,7 +139,7 @@
     </div>
 
     <div class="filter-bar">
-        <input type="text" id="searchInput" placeholder="🔍 Search products..." onkeyup="filterProducts()">
+        <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()">
     </div>
 
     <section class="products-section" style="padding: 0 24px 100px;">
@@ -167,7 +167,7 @@
                     <div class="product-body">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
                             <h3 class="product-name">${product.name}</h3>
-                            <span class="popularity-tag">🔥 ${orderCounts[product.id] != null ? orderCounts[product.id] : 0} Orders</span>
+                            <span class="popularity-tag">${orderCounts[product.id] != null ? orderCounts[product.id] : 0} Orders</span>
                         </div>
                         <div class="product-price">₹${product.price}</div>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: auto; padding-top: 12px;">Click for details &rarr;</p>
@@ -225,12 +225,12 @@
                     </div>
 
                     <div class="delivery-info">
-                        🚚 Expected Delivery: Within 3-5 Business Days
+                        Expected Delivery: Within 3-5 Business Days
                     </div>
 
                     <div style="display: flex; gap: 16px;">
                         <a id="modalCartLink" href="" class="btn btn-primary" style="flex: 2; padding: 18px; font-weight: 800; border-radius: 12px; text-align: center;">
-                            🛒 Add To Cart
+                            Add To Cart
                         </a>
                     </div>
                 </div>
@@ -248,7 +248,7 @@
             document.getElementById('modalQty').textContent = data.qty + ' items';
             document.getElementById('modalCategory').textContent = data.cat;
             document.getElementById('modalWeight').textContent = data.weight + 'g';
-            document.getElementById('modalOrders').textContent = '🔥 ' + data.orders + ' Orders';
+            document.getElementById('modalOrders').textContent = data.orders + ' Orders';
             document.getElementById('modalCartLink').href = '/user/addtocart?pid=' + data.id;
             
             document.getElementById('productModalOverlay').style.display = 'flex';
@@ -274,7 +274,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <span style="font-size: 1.5rem; font-weight: 800; display: block;">🛍️ E-Store</span>
+                <span style="font-size: 1.5rem; font-weight: 800; display: block;">E-Store</span>
                 <p>Experience premium shopping with unmatched quality and lighting-fast delivery.</p>
             </div>
             <div class="footer-links">

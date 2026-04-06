@@ -55,15 +55,15 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">🛍️ E-Store</a>
+            <a href="/" class="nav-brand">E-Store</a>
             <ul class="nav-links">
                 <li><a href="/" style="color: var(--primary); font-weight: 700;">Home</a></li>
                 <li><a href="/user/products">Products</a></li>
                 <c:choose>
                     <c:when test="${not empty username}">
-                        <li><a href="/buy">Cart 🛒 <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
+                        <li><a href="/buy">Cart <c:if test="${cartCount > 0}"><span class="cart-badge">${cartCount}</span></c:if></a></li>
                         <li><a href="/user/orders">My Orders</a></li>
-                        <li><a href="/user/profile" class="nav-profile">👤 ${username}</a></li>
+                        <li><a href="/user/profile" class="nav-profile">${username}</a></li>
                         <li><a href="/logout" class="btn btn-nav-logout">Logout</a></li>
                     </c:when>
                     <c:otherwise>
@@ -121,7 +121,7 @@
                     <div class="product-body">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
                             <h3 class="product-name">${product.name}</h3>
-                            <span class="popularity-tag">🔥 ${orderCounts[product.id] != null ? orderCounts[product.id] : 0} Orders</span>
+                            <span class="popularity-tag">${orderCounts[product.id] != null ? orderCounts[product.id] : 0} Orders</span>
                         </div>
                         <span class="product-price">₹${product.price}</span>
                         <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 12px;">Click to view details</p>
@@ -164,11 +164,11 @@
                     </div>
 
                     <div class="delivery-info">
-                        🚚 Estimated Delivery: Within 3-5 Business Days
+                        Estimated Delivery: Within 3-5 Business Days
                     </div>
 
                     <a id="modalCartLink" href="" class="btn btn-primary" style="width:100%; display:block; text-align:center; padding:16px; font-weight:800; border-radius:12px;">
-                        🛒 Add To Cart
+                        Add To Cart
                     </a>
                 </div>
             </div>
@@ -185,7 +185,7 @@
             document.getElementById('modalQty').textContent = data.qty + ' Units';
             document.getElementById('modalCategory').textContent = data.cat;
             document.getElementById('modalWeight').textContent = data.weight + 'g';
-            document.getElementById('modalOrders').textContent = '🔥 ' + data.orders + ' Orders';
+            document.getElementById('modalOrders').textContent = data.orders + ' Orders';
             document.getElementById('modalCartLink').href = '/user/addtocart?pid=' + data.id;
             document.getElementById('productModalOverlay').style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -204,7 +204,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <span style="font-size: 1.5rem; font-weight: 800; display: block;">🛍️ E-Store</span>
+                <span style="font-size: 1.5rem; font-weight: 800; display: block;">E-Store</span>
                 <p>Experience premium shopping with unmatched quality and lighting-fast delivery.</p>
             </div>
             <div class="footer-links">

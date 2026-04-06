@@ -67,7 +67,7 @@ public class OrderController {
     @GetMapping("/user/orders")
     @io.swagger.v3.oas.annotations.Operation(summary = "View Orders", description = "Retrieve personal order history")
     public ModelAndView viewOrders() {
-        ModelAndView mView = new ModelAndView("orders");
+        ModelAndView mView = new ModelAndView("userOrders");
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByUsername(username);
         
