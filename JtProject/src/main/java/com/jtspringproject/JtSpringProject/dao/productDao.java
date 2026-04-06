@@ -61,14 +61,27 @@ public class productDao {
 	}
 	@Transactional
 	public Boolean deleteProduct(int id) {
-
 		Session session = this.sessionFactory.getCurrentSession();
-		Object persistanceInstance = session.load(Product.class, id);
+		
+		try {
+			// Manually delete foreign key dependencies to prevent ConstraintViolationException (HTTP 500)
+			session.createQuery("delete from CartProduct c where c.product.id = :id")
+				   .setParameter("id", id)
+				   .executeUpdate();
+			session.createQuery("delete from OrderItemEntity o where o.product.id = :id")
+				   .setParameter("id", id)
+				   .executeUpdate();
 
-		if (persistanceInstance != null) {
-			session.delete(persistanceInstance);
-			return true;
+			Object persistanceInstance = session.load(Product.class, id);
+
+			if (persistanceInstance != null) {
+				session.delete(persistanceInstance);
+				return true;
+			}
+		} catch (Exception e) {
+			// Log error if preferred, returns false on failure
 		}
+		
 		return false;
 	}
 
