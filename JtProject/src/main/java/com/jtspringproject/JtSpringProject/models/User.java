@@ -25,7 +25,16 @@ public class User {
 	
 	private String address;
 	
+	@Column(name = "is_blocked", nullable = false, columnDefinition = "boolean default false")
+	private boolean blocked = false;
 	
+	public boolean isBlocked() {
+		return blocked;
+	}
+
+	public void setBlocked(boolean blocked) {
+		this.blocked = blocked;
+	}
 	public int getId() {
 		return id;
 	}

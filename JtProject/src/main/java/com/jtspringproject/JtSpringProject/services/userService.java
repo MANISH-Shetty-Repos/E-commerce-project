@@ -51,4 +51,8 @@ public class userService {
 		// No password change, keep existing encoded password as is.
 		return this.userDao.saveUser(user);
 	}
+
+	public boolean deleteUser(int id) {
+		return this.userDao.deleteUser(id);
+	}
 }

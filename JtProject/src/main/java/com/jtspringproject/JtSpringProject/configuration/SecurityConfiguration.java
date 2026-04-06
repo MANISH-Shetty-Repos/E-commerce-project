@@ -135,6 +135,7 @@ public class SecurityConfiguration {
                     .withUsername(user.getUsername())
                     .password(user.getPassword())
                     .roles("USER")
+                    .disabled(user.isBlocked())
                     .build();
         });
         authProvider.setPasswordEncoder(passwordEncoder);

@@ -200,10 +200,16 @@ public class UserController {
 
 	@GetMapping("/login")
 	@io.swagger.v3.oas.annotations.Operation(summary = "Login Page", description = "Loads the user login view")
-	public ModelAndView userlogin(@RequestParam(required = false) String error) {
+	public ModelAndView userlogin(@RequestParam(required = false) String error, javax.servlet.http.HttpServletRequest request) {
 		ModelAndView mv = new ModelAndView("userLogin");
 		if ("true".equals(error)) {
-			mv.addObject("msg", "Please enter correct email and password");
+			String errorMessage = "Please enter correct username and password";
+			Exception exception = (Exception) request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+            if (exception instanceof org.springframework.security.authentication.DisabledException ||
+               (exception != null && exception.getMessage() != null && exception.getMessage().contains("User is disabled"))) {
+                errorMessage = "Your account has been suspended by the administrator.";
+            }
+			mv.addObject("msg", errorMessage);
 		}
 		return mv;
 	}

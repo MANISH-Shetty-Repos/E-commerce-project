@@ -48,14 +48,19 @@
                         </div>
                     </div>
 
-                    <!-- SEARCH -->
+                    <!-- SEARCH & ALERTS -->
                     <div style="margin-bottom: 32px;">
+                        <c:if test="${not empty successMsg}">
+                            <div class="alert alert-success" style="margin-bottom: 24px;">${successMsg}</div>
+                        </c:if>
+                        <c:if test="${not empty errorMsg}">
+                            <div class="alert alert-danger" style="background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:16px; border-radius:12px; margin-bottom: 24px; font-weight:600;">${errorMsg}</div>
+                        </c:if>
+
                         <input type="text" id="customerSearch" placeholder="Quick search by username or email..."
                             onkeyup="filterCustomers()"
                             style="padding: 12px 20px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 1rem; width: 100%; max-width: 500px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     </div>
-
-                    <!-- ADMINS SECTION -->
                     <h2
                         style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                         Administrators
@@ -109,7 +114,8 @@
                                     <th>Customer Name</th>
                                     <th>Contact Info</th>
                                     <th>Primary Address</th>
-                                    <th>Account Type</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -134,7 +140,44 @@
                                                 style="color: #64748b; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 ${not empty customer.address ? customer.address : '—'}
                                             </td>
-                                            <td><span class="badge badge-user">Standard User</span></td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${customer.blocked}">
+                                                        <span class="badge" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca;">Blocked</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge badge-user">Active</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <div id="action-btns-${customer.id}" style="display: flex; gap: 8px; justify-content: flex-end;">
+                                                    <c:choose>
+                                                        <c:when test="${customer.blocked}">
+                                                            <form action="/admin/customers/unblock" method="get" style="margin:0;">
+                                                                <input type="hidden" name="id" value="${customer.id}">
+                                                                <button type="submit" class="btn" style="background:#10b981; color:white; padding:6px 12px; font-size:0.8rem; border:none; cursor:pointer; font-weight:600; border-radius:8px;">Unblock</button>
+                                                            </form>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <form action="/admin/customers/block" method="get" style="margin:0;">
+                                                                <input type="hidden" name="id" value="${customer.id}">
+                                                                <button type="submit" class="btn" style="background:#f59e0b; color:white; padding:6px 12px; font-size:0.8rem; border:none; cursor:pointer; font-weight:600; border-radius:8px;">Block</button>
+                                                            </form>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <button type="button" class="btn" style="background:#ef4444; color:white; padding:6px 12px; font-size:0.8rem; border:none; cursor:pointer; font-weight:600; border-radius:8px;" onclick="showDeleteConfirm(${customer.id})">Delete</button>
+                                                </div>
+
+                                                <div id="delete-confirm-${customer.id}" style="display: none; align-items: center; justify-content: flex-end; gap: 10px; background: #fef2f2; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 8px;">
+                                                    <span style="font-size: 0.8rem; color: #ef4444; font-weight: 600;">Confirm deletion?</span>
+                                                    <form action="/admin/customers/delete" method="get" style="margin:0;">
+                                                        <input type="hidden" name="id" value="${customer.id}">
+                                                        <button type="submit" style="background:#ef4444; color:white; padding:4px 8px; font-size:0.75rem; border:none; cursor:pointer; font-weight:600; border-radius:6px;">Yes</button>
+                                                    </form>
+                                                    <button type="button" style="background:transparent; color:#64748b; padding:4px 8px; font-size:0.75rem; border:1px solid #cbd5e1; cursor:pointer; font-weight:600; border-radius:6px;" onclick="cancelDelete(${customer.id})">Cancel</button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </c:if>
                                 </c:forEach>
@@ -152,6 +195,16 @@
                         const text = row.innerText.toLowerCase();
                         row.style.display = text.includes(query) ? '' : 'none';
                     });
+                }
+
+                function showDeleteConfirm(id) {
+                    document.getElementById('action-btns-' + id).style.display = 'none';
+                    document.getElementById('delete-confirm-' + id).style.display = 'flex';
+                }
+
+                function cancelDelete(id) {
+                    document.getElementById('delete-confirm-' + id).style.display = 'none';
+                    document.getElementById('action-btns-' + id).style.display = 'flex';
                 }
             </script>
         </body>

@@ -274,12 +274,53 @@ public class AdminController {
 			dto.setEmail(user.getEmail());
 			dto.setAddress(user.getAddress());
 			dto.setRole(user.getRole());
+            dto.setBlocked(user.isBlocked());
 			return dto;
 		}).collect(java.util.stream.Collectors.toList());
 
 		mView.addObject("customers", userDtos);
 		return mView;
 	}
+	
+    @GetMapping("customers/block")
+    public String blockUser(@RequestParam("id") int id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        User user = userService.getUserById(id);
+        if (user != null && !"ROLE_ADMIN".equals(user.getRole())) {
+            user.setBlocked(true);
+            userService.updateExistingUser(user, null);
+            redirectAttributes.addFlashAttribute("successMsg", "User '" + user.getUsername() + "' has been blocked.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMsg", "Failed to block user. Admins cannot be blocked.");
+        }
+        return "redirect:/admin/customers";
+    }
+
+    @GetMapping("customers/unblock")
+    public String unblockUser(@RequestParam("id") int id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        User user = userService.getUserById(id);
+        if (user != null) {
+            user.setBlocked(false);
+            userService.updateExistingUser(user, null);
+            redirectAttributes.addFlashAttribute("successMsg", "User '" + user.getUsername() + "' has been unblocked.");
+        }
+        return "redirect:/admin/customers";
+    }
+
+    @GetMapping("customers/delete")
+    public String deleteUser(@RequestParam("id") int id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        User user = userService.getUserById(id);
+        if (user != null && !"ROLE_ADMIN".equals(user.getRole())) {
+            boolean success = userService.deleteUser(id);
+            if (success) {
+                redirectAttributes.addFlashAttribute("successMsg", "User '" + user.getUsername() + "' deleted successfully.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMsg", "Failed to delete user.");
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("errorMsg", "Failed to delete user. Admins cannot be deleted.");
+        }
+        return "redirect:/admin/customers";
+    }
 	
 	
 	@GetMapping("profileDisplay")

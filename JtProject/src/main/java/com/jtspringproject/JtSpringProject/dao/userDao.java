@@ -83,4 +83,33 @@ public class userDao {
     public User getUserById(int id) {
         return sessionFactory.getCurrentSession().get(User.class, id);
     }
+
+    @Transactional
+    public boolean deleteUser(int id) {
+        Session session = this.sessionFactory.getCurrentSession();
+        
+        try {
+            // Drop related constraints manually before deleting user
+            // 1. Delete items in the cart (CartEntity is mapped as CART)
+            session.createQuery("delete from CartProduct cp where cp.cart.id in (select c.id from CART c where c.customer.id = :id)").setParameter("id", id).executeUpdate();
+            
+            // 2. Delete the cart itself
+            session.createQuery("delete from CART where customer.id = :id").setParameter("id", id).executeUpdate();
+            
+            // 3. Delete order items (Order is mapped as OrderEntity)
+            session.createQuery("delete from OrderItemEntity oi where oi.order.id in (select o.id from OrderEntity o where o.user.id = :id)").setParameter("id", id).executeUpdate();
+            
+            // 4. Delete the orders
+            session.createQuery("delete from OrderEntity where user.id = :id").setParameter("id", id).executeUpdate();
+            
+            Object persistentInstance = session.load(User.class, id);
+            if (persistentInstance != null) {
+                session.delete(persistentInstance);
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("Failed to delete user with ID: " + id, e);
+        }
+        return false;
+    }
 }
